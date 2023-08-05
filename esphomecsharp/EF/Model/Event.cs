@@ -1,34 +1,18 @@
-﻿using System;
-
-namespace esphomecsharp.EF.Model
+﻿namespace esphomecsharp.EF.Model
 {
     sealed public class Event : IDbItem
     {
-        //composite key, order matter
-        public int DescId { get; set; }
-        public DateTimeOffset Date { get; set; }
-        public long PkSuffix { get; set; }
-        //composite key, order matter
+        public long EventId { get; set; }
 
-        public double? ValueDouble
-        {
-            get
-            {
-                if (double.TryParse(Value.ToString(), out double value))
-                    return value;
-
-                return null;
-            }
-            set
-            {
-                Value = value;
-            }
-        }
-
+        public int RowEntryId { get; set; }
+        public string Date { get; set; }
         public string ValueString
         {
             get
             {
+                if (double.TryParse(Value.ToString(), out double value))
+                    return value.ToString(GlobalVariable.RES_DOUBLE_STRING);
+
                 return Value.ToString();
             }
             set
@@ -42,6 +26,6 @@ namespace esphomecsharp.EF.Model
         public string Name { get; set; }
         public string State { get; set; }
 
-        public EventId EspHomeId { get; set; }
+        public RowEntry EspHomeId { get; set; }
     }
 }

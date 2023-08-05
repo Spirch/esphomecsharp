@@ -2,9 +2,7 @@
 using esphomecsharp.Model;
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace esphomecsharp
@@ -60,7 +58,7 @@ namespace esphomecsharp
             {
                 await EspHomeContext.InsertErrorAsync(new Error()
                 {
-                    Date = DateTimeOffset.Now,
+                    Date = DateTime.Now.ToString(GlobalVariable.RES_DATE_TIME),
                     DeviceName = source,
                     Message = e.ToString(),
                 });
@@ -82,7 +80,7 @@ namespace esphomecsharp
                     Console.Write($"{x.FriendlyName}: {row.Name} {json.State}".PadRight(GlobalVariable.CONSOLE_RIGHT_PAD));
                 });
 
-                json.Date = DateTimeOffset.Now;
+                json.Date = DateTime.Now.ToString(GlobalVariable.RES_DATE_TIME);
 
                 await EspHomeContext.InsertRowAsync(json, row);
 
@@ -111,11 +109,11 @@ namespace esphomecsharp
                 GlobalVariable.PrintError.Restart();
             }
 
-            //if(!force)
+            //if (!force)
             //{
             //    int val;
 
-            //    if ((val = Random.Shared.Next(1, 100)) > 95)
+            //    if ((val = Random.Shared.Next(1, 100)) >= 98)
             //        throw new Exception($"val: {val}");
             //}
 

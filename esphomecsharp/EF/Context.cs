@@ -6,8 +6,8 @@ namespace esphomecsharp.EF
     public sealed class Context : DbContext
     {
         public DbSet<Error> Error { get; set; }
-        public DbSet<Event> EspHomeEvent { get; set; }
-        public DbSet<EventId> EspHomeId { get; set; }
+        public DbSet<Event> Event { get; set; }
+        public DbSet<RowEntry> RowEntry { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -18,13 +18,13 @@ namespace esphomecsharp.EF
         {
             modelBuilder.Entity<Event>(x =>
             {
-                x.HasKey(p => new { p.DescId, p.Date, p.PkSuffix });
+                x.HasKey(p => p.EventId);
 
-                x.Property(p => p.PkSuffix)
+                x.Property(p => p.EventId)
                  .IsRequired()
-                 .HasDefaultValueSql("random()");
+                 .ValueGeneratedOnAdd();
 
-                x.Property(p => p.DescId)
+                x.Property(p => p.RowEntryId)
                  .IsRequired();
 
                 x.Property(p => p.Date)
@@ -33,17 +33,18 @@ namespace esphomecsharp.EF
                 x.Ignore(p => p.Id);
                 x.Ignore(p => p.Name);
                 x.Ignore(p => p.Value);
+                x.Ignore(p => p.State);
 
                 x.HasOne(d => d.EspHomeId)
-                 .WithMany(dm => dm.EspHomeEvent)
-                 .HasForeignKey(dkey => dkey.DescId);
+                 .WithMany(dm => dm.Event)
+                 .HasForeignKey(dkey => dkey.RowEntryId);
             });
 
-            modelBuilder.Entity<EventId>(x =>
+            modelBuilder.Entity<RowEntry>(x =>
             {
-                x.HasKey(p => p.Id);
+                x.HasKey(p => p.RowEntryId);
 
-                x.Property(p => p.Id)
+                x.Property(p => p.RowEntryId)
                  .IsRequired()
                  .ValueGeneratedOnAdd();
 
@@ -56,9 +57,9 @@ namespace esphomecsharp.EF
 
             modelBuilder.Entity<Error>(x =>
             {
-                x.HasKey(p => p.Id);
+                x.HasKey(p => p.ErrorId);
 
-                x.Property(p => p.Id)
+                x.Property(p => p.ErrorId)
                  .IsRequired()
                  .ValueGeneratedOnAdd();
 

@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text.Json;
-using System.Threading;
 
 namespace esphomecsharp
 {
@@ -16,6 +15,7 @@ namespace esphomecsharp
             public string Suffix { get; set; }
             public int Row { get; set; }
             public string Name { get; set; }
+            public string Unit { get; set; }
         }
 
         public const string RES_TOTAL_DAILY_ENERGY = "Total Daily Energy:";
@@ -90,19 +90,26 @@ namespace esphomecsharp
                              {
                                  Name = r.Name,
                                  Row = s.Position + r.Row + 5,
-                                 Col = s.Column * (CONSOLE_RIGHT_PAD + 1)
+                                 Col = s.Column * (CONSOLE_RIGHT_PAD + 1),
+                                 Unit = r.Unit
                              }
                          }
                         ).ToDictionary(k => k.id, v => v.row);
 
             foreach(var total in TotalDailyEnergy)
             {
-                FinalRows.Add($"{total.Key}_total", new RowInfo());
+                FinalRows.Add($"{total.Key}_total", new RowInfo()
+                {
+                    Unit = RES_KILLO_WATT,
+                });
             }
 
             foreach (var total in TotalPower)
             {
-                FinalRows.Add($"{total.Key}_total", new RowInfo());
+                FinalRows.Add($"{total.Key}_total", new RowInfo()
+                {
+                    Unit = RES_KILLO_WATT,
+                });
             }
 
             PrintTime = Stopwatch.StartNew();

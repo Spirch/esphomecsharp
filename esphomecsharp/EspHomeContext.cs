@@ -2,10 +2,8 @@
 using esphomecsharp.EF.Model;
 using esphomecsharp.Model;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.VisualBasic;
 using System;
 using System.Collections.Concurrent;
-using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -71,26 +69,27 @@ namespace esphomecsharp
         {
             if (row.DbDescId == null)
             {
-                row.DbDescId = await EspHomeDb.EspHomeId
+                row.DbDescId = await EspHomeDb.RowEntry
                                             .Where(x => x.Value == json.Id)
-                                            .Select(x => x.Id)
+                                            .Select(x => x.RowEntryId)
                                             .FirstOrDefaultAsync();
 
                 if (row.DbDescId == null)
                 {
-                    var newId = new EventId()
+                    var newId = new RowEntry()
                     {
                         Value = json.Id,
+                        Unit = row.Unit,
                     };
 
                     await EspHomeDb.AddAsync(newId);
                     await EspHomeDb.SaveChangesAsync();
 
-                    row.DbDescId = newId.Id;
+                    row.DbDescId = newId.RowEntryId;
                 }
             }
 
-            json.DescId = row.DbDescId.Value;
+            json.RowEntryId = row.DbDescId.Value;
         }
 
         public static async Task InsertErrorAsync(Error error)
@@ -114,7 +113,7 @@ namespace esphomecsharp
                 Id = $"{json.Id}_total",
                 Value = total,
                 State = $"{total.ToString(GlobalVariable.RES_DOUBLE_STRING)} {unit}",
-                Date = DateTimeOffset.Now,
+                Date = DateTime.Now.ToString(GlobalVariable.RES_DATE_TIME),
             };
 
             Queue.Add((newJson, row));

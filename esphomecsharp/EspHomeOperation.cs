@@ -11,6 +11,8 @@ namespace esphomecsharp
 {
     public static class EspHomeOperation
     {
+        public static bool Running;
+
         //reconnect if no activity after X
         //(hardcoded for now to 60 seconds, my device got an interval of 30s)
         public static async Task MonitorConnectionTimeoutAsync()
@@ -19,7 +21,7 @@ namespace esphomecsharp
             {
                 x.LastActivity = Stopwatch.StartNew();
 
-                while (true)
+                while (Running)
                 {
                     await Task.Delay(5000);
 
@@ -37,7 +39,7 @@ namespace esphomecsharp
         {
             GlobalVariable.Servers.AsParallel().ForAll(async x =>
             {
-                while (true)
+                while (Running)
                 {
                     x.CancellationTokenSource = new();
 
@@ -54,7 +56,7 @@ namespace esphomecsharp
                         using var stream = await client.GetStreamAsync(x.Uri);
                         using var reader = new StreamReader(stream);
 
-                        while (true)
+                        while (Running)
                         {
                             data = await reader.ReadLineAsync().WaitAsync(x.CancellationTokenSource.Token).ConfigureAwait(false);
 
