@@ -64,6 +64,8 @@ namespace esphomecsharp
                             {
                                 json = JsonSerializer.Deserialize<Event>(data.AsSpan(GlobalVariable.DATA_START), GlobalVariable.JsonOptions);
 
+                                json.UnixTime = DateTimeOffset.Now.ToUnixTimeSeconds();
+
                                 await ConsoleOperation.PrintErrorAsync();
 
                                 await ConsoleOperation.PrintTimeAsync();

@@ -1,17 +1,27 @@
-﻿namespace esphomecsharp.EF.Model
+﻿using System;
+
+namespace esphomecsharp.EF.Model
 {
     sealed public class Event : IDbItem
     {
+        public Event()
+        {
+                
+        }
+
         public long EventId { get; set; }
 
         public int RowEntryId { get; set; }
-        public string Date { get; set; }
-        public string ValueString
+        public long UnixTime { get; set; }
+        public decimal Data
         {
             get
             {
-                if (double.TryParse(Value.ToString(), out double value))
-                    return value.ToString(GlobalVariable.RES_DOUBLE_STRING);
+                if (decimal.TryParse(Value.ToString(), out decimal dec))
+                    return Truncate(dec, 2);
+
+                if(bool.TryParse(Value.ToString(), out bool bo))
+                    return Convert.ToDecimal(bo);
 
                 return Value.ToString();
             }
@@ -27,5 +37,22 @@
         public string State { get; set; }
 
         public RowEntry EspHomeId { get; set; }
+
+
+        decimal Truncate(decimal d, byte decimals)
+        {
+            decimal r = Math.Round(d, decimals);
+
+            if (d > 0 && r > d)
+            {
+                return r - new decimal(1, 0, 0, false, decimals);
+            }
+            else if (d < 0 && r < d)
+            {
+                return r + new decimal(1, 0, 0, false, decimals);
+            }
+
+            return r;
+        }
     }
 }

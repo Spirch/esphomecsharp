@@ -80,8 +80,6 @@ namespace esphomecsharp
                     Console.Write($"{x.FriendlyName}: {row.Name} {json.State}".PadRight(GlobalVariable.CONSOLE_RIGHT_PAD));
                 });
 
-                json.Date = DateTime.Now.ToString(GlobalVariable.RES_DATE_TIME);
-
                 await EspHomeContext.InsertRowAsync(json, row);
 
                 x.LastActivity.Restart();

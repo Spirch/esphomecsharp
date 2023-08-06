@@ -112,8 +112,7 @@ namespace esphomecsharp
             {
                 Id = $"{json.Id}_total",
                 Value = total,
-                State = $"{total.ToString(GlobalVariable.RES_DOUBLE_STRING)} {unit}",
-                Date = DateTime.Now.ToString(GlobalVariable.RES_DATE_TIME),
+                UnixTime = DateTimeOffset.Now.ToUnixTimeSeconds(),
             };
 
             Queue.Add((newJson, row));

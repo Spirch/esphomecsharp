@@ -24,10 +24,14 @@ namespace esphomecsharp.EF
                  .IsRequired()
                  .ValueGeneratedOnAdd();
 
+                x.Property(p => p.Data)
+                    .IsRequired()
+                    .HasColumnType("real");
+
                 x.Property(p => p.RowEntryId)
                  .IsRequired();
 
-                x.Property(p => p.Date)
+                x.Property(p => p.UnixTime)
                  .IsRequired();
 
                 x.Ignore(p => p.Id);
