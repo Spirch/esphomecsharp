@@ -215,7 +215,23 @@ namespace esphomecsharp
                     Console.SetCursorPosition(0, 0);
                     Console.WriteLine("".PadRight(Console.WindowWidth * 4));
                 });
+
+                await PrintHelp();
             }
+
+            await Task.CompletedTask;
+        }
+
+        public static async Task PrintHelp()
+        {
+            Queue.Add(() =>
+            {
+                Console.ForegroundColor = ConsoleColor.White;
+                Console.SetCursorPosition(GlobalVariable.CONSOLE_LEFT_POS + GlobalVariable.CONSOLE_RIGHT_PAD + 1, 1);
+                Console.WriteLine("i : hide input    r : reconnect all");
+                Console.SetCursorPosition(GlobalVariable.CONSOLE_LEFT_POS + GlobalVariable.CONSOLE_RIGHT_PAD + 1, 2);
+                Console.WriteLine("c : clear header  q : quit");
+            });
 
             await Task.CompletedTask;
         }

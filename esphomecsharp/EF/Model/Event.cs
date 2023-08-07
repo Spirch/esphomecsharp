@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 
 namespace esphomecsharp.EF.Model
 {
@@ -17,7 +18,7 @@ namespace esphomecsharp.EF.Model
         {
             get
             {
-                if (decimal.TryParse(Value.ToString(), out decimal dec))
+                if (decimal.TryParse(Value.ToString(), NumberStyles.Number | NumberStyles.AllowExponent, null, out decimal dec))
                     return Truncate(dec, 2);
 
                 if(bool.TryParse(Value.ToString(), out bool bo))
