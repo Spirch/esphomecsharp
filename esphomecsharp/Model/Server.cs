@@ -10,9 +10,8 @@ namespace esphomecsharp.Model
         public string Name { get; set; }
         public string FriendlyName { get; set; }
         public string Uri { get; set; }
-        public int Position { get; set; }
         public ConsoleColor Color { get; set; }
-        public int Column { get; set; }
+        public int Row { get; set; }
         public Stopwatch LastActivity { get; set; }
     }
 }

@@ -6,6 +6,8 @@ await EspHomeContext.CreateDBIfNotExistAsync();
 EspHomeOperation.Running = true;
 await EspHomeOperation.MonitorConnectionTimeoutAsync();
 
+await ConsoleOperation.PrintTableAsync();
+
 await EspHomeOperation.FetchDeviceDataAsync();
 
 var con = ConsoleOperation.RunAndProcessAsync();

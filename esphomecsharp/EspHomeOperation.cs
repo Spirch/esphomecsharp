@@ -52,7 +52,6 @@ namespace esphomecsharp
                     {
                         //to make sure all events doesnt arrive at the same time
                         await Task.Delay(Random.Shared.Next(0, 5000));
-                        await ConsoleOperation.PrintServerNameAsync(x);
 
                         using var client = new HttpClient();
                         using var stream = await client.GetStreamAsync(x.Uri);

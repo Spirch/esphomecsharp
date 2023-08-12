@@ -69,15 +69,25 @@ namespace esphomecsharp
             await Task.CompletedTask;
         }
 
-        public static async Task PrintServerNameAsync(Server x)
+        public static async Task PrintTableAsync()
         {
-            if (GlobalVariable.FinalRows.TryGetValue($"{x.Name}{x.FriendlyName}", out RowInfo row))
+            foreach(var header in GlobalVariable.ColHeader) 
             {
                 Queue.Add(() =>
                 {
-                    Console.ForegroundColor = x.Color;
-                    Console.SetCursorPosition(GlobalVariable.CONSOLE_LEFT_POS + row.Col, row.Row);
-                    Console.Write($"{x.FriendlyName}".PadRight(GlobalVariable.CONSOLE_RIGHT_PAD));
+                    Console.ForegroundColor = header.Color;
+                    Console.SetCursorPosition(GlobalVariable.CONSOLE_LEFT_POS + header.Col, header.Row);
+                    Console.Write(header.Name.PadCenter(header.Padding));
+                });
+            }
+
+            foreach(var header in GlobalVariable.RowHeader)
+            {
+                Queue.Add(() =>
+                {
+                    Console.ForegroundColor = header.Color;
+                    Console.SetCursorPosition(GlobalVariable.CONSOLE_LEFT_POS + header.Col, header.Row);
+                    Console.Write(header.Name.PadLeft(header.Padding));
                 });
             }
 
@@ -92,7 +102,7 @@ namespace esphomecsharp
                 {
                     Console.ForegroundColor = x.Color;
                     Console.SetCursorPosition(GlobalVariable.CONSOLE_LEFT_POS + row.Col, row.Row);
-                    Console.Write($"{row.Name.PadRight(GlobalVariable.ValueRightPad)}: {json.State}".PadRight(GlobalVariable.CONSOLE_RIGHT_PAD));
+                    Console.Write(json.State.PadCenter(row.Padding));
                 });
 
                 await EspHomeContext.InsertRowAsync(json, row);
@@ -250,6 +260,13 @@ namespace esphomecsharp
             });
 
             await Task.CompletedTask;
+        }
+
+        public static string PadCenter(this string str, int length)
+        {
+            int spaces = length - str.Length;
+            int padLeft = spaces / 2 + str.Length;
+            return str.PadLeft(padLeft).PadRight(length);
         }
     }
 }
