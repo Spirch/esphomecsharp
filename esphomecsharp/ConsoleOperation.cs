@@ -69,6 +69,21 @@ namespace esphomecsharp
             await Task.CompletedTask;
         }
 
+        public static async Task PrintServerNameAsync(Server x)
+        {
+            if (GlobalVariable.FinalRows.TryGetValue($"{x.Name}{x.FriendlyName}", out RowInfo row))
+            {
+                Queue.Add(() =>
+                {
+                    Console.ForegroundColor = x.Color;
+                    Console.SetCursorPosition(GlobalVariable.CONSOLE_LEFT_POS + row.Col, row.Row);
+                    Console.Write($"{x.FriendlyName}".PadRight(GlobalVariable.CONSOLE_RIGHT_PAD));
+                });
+            }
+
+            await Task.CompletedTask;
+        }
+
         public static async Task PrintRowAsync(Server x, Event json)
         {
             if (GlobalVariable.FinalRows.TryGetValue(json.Id, out RowInfo row))
@@ -77,7 +92,7 @@ namespace esphomecsharp
                 {
                     Console.ForegroundColor = x.Color;
                     Console.SetCursorPosition(GlobalVariable.CONSOLE_LEFT_POS + row.Col, row.Row);
-                    Console.Write($"{x.FriendlyName}: {row.Name} {json.State}".PadRight(GlobalVariable.CONSOLE_RIGHT_PAD));
+                    Console.Write($"{row.Name.PadRight(GlobalVariable.ValueRightPad)}: {json.State}".PadRight(GlobalVariable.CONSOLE_RIGHT_PAD));
                 });
 
                 await EspHomeContext.InsertRowAsync(json, row);
@@ -85,6 +100,7 @@ namespace esphomecsharp
                 x.LastActivity.Restart();
             }
         }
+
         public static async Task PrintErrorAsync(bool force = false)
         {
             if (force || GlobalVariable.PrintError.ElapsedMilliseconds > 60000)

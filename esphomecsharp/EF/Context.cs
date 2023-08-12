@@ -11,7 +11,7 @@ namespace esphomecsharp.EF
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlite($"DataSource={GlobalVariable.DBFileName};");
+            optionsBuilder.UseSqlite($"DataSource={GlobalVariable.Settings.DBFileName};");
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

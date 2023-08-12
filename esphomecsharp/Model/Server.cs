@@ -6,7 +6,6 @@ namespace esphomecsharp.Model
 {
     sealed public class Server
     {
-        public int Id { get; set; }
         public CancellationTokenSource CancellationTokenSource { get; set; }
         public string Name { get; set; }
         public string FriendlyName { get; set; }

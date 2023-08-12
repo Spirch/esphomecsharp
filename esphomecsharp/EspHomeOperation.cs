@@ -42,15 +42,17 @@ namespace esphomecsharp
                 while (Running)
                 {
                     x.CancellationTokenSource = new();
+                    int readPerSecond = 0;
+                    var watchPerSecond = Stopwatch.StartNew();
+                    bool showNext = false;
+                    string data = "";
+                    Event json = null;
 
                     try
                     {
                         //to make sure all events doesnt arrive at the same time
                         await Task.Delay(Random.Shared.Next(0, 5000));
-
-                        bool showNext = false;
-                        string data = "";
-                        Event json = null;
+                        await ConsoleOperation.PrintServerNameAsync(x);
 
                         using var client = new HttpClient();
                         using var stream = await client.GetStreamAsync(x.Uri);
@@ -58,7 +60,30 @@ namespace esphomecsharp
 
                         while (Running)
                         {
+                            readPerSecond++;
+
                             data = await reader.ReadLineAsync().WaitAsync(x.CancellationTokenSource.Token).ConfigureAwait(false);
+
+                            if (x.CancellationTokenSource.IsCancellationRequested)
+                            {
+                                throw new Exception($"{x.Name} CancellationTokenSource.IsCancellationRequested");
+                            }
+
+                            if (reader.EndOfStream)
+                            {
+                                throw new Exception($"{x.Name} EndOfStream");
+                            }
+
+                            if (watchPerSecond.ElapsedMilliseconds > 1000)
+                            {
+                                if (readPerSecond > 100) //should never happen! but it did...
+                                {
+                                    throw new Exception($"{x.Name} readPerSecond");
+                                }
+
+                                watchPerSecond.Restart();
+                                readPerSecond = 0;
+                            }
 
                             if (showNext)
                             {

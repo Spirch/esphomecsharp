@@ -52,7 +52,7 @@ namespace esphomecsharp
 
         public static async Task CreateDBIfNotExistAsync()
         {
-            if (!File.Exists(GlobalVariable.DBFileName))
+            if (!File.Exists(GlobalVariable.Settings.DBFileName))
             {
                 using var test = new Context();
 
