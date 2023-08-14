@@ -11,10 +11,9 @@ namespace esphomecsharp
 {
     public static class EspHomeOperation
     {
-        public static bool Running;
+        public static bool Running { get; set; }
 
-        //reconnect if no activity after X
-        //(hardcoded for now to 60 seconds, my device got an interval of 30s)
+        //try reconnect if no activity after X
         public static async Task MonitorConnectionTimeoutAsync()
         {
             GlobalVariable.Servers.AsParallel().ForAll(async x =>
@@ -25,7 +24,7 @@ namespace esphomecsharp
                 {
                     await Task.Delay(5000);
 
-                    if (x.LastActivity.Elapsed.TotalSeconds > 60)
+                    if (x.LastActivity.Elapsed.TotalSeconds > x.ServerTimeOut)
                     {
                         x.CancellationTokenSource.Cancel();
                         x.LastActivity.Restart();

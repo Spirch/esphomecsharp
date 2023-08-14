@@ -91,7 +91,7 @@ namespace esphomecsharp
                 });
             }
 
-            await Task.CompletedTask;
+            await PrintHelp();
         }
 
         public static async Task PrintRowAsync(Server x, Event json)

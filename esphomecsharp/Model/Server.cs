@@ -12,6 +12,7 @@ namespace esphomecsharp.Model
         public string Uri { get; set; }
         public ConsoleColor Color { get; set; }
         public int Row { get; set; }
+        public int ServerTimeOut { get; set; }
         public Stopwatch LastActivity { get; set; }
     }
 }

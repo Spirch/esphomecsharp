@@ -13,8 +13,6 @@ await EspHomeOperation.FetchDeviceDataAsync();
 var con = ConsoleOperation.RunAndProcessAsync();
 var db = EspHomeContext.RunAndProcessAsync();
 
-await ConsoleOperation.PrintHelp();
-
 while (await ConsoleOperation.ReadKeyAsync());
 
 EspHomeOperation.Running = false;
