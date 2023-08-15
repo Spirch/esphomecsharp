@@ -106,11 +106,11 @@ namespace esphomecsharp
             await Task.CompletedTask;
         }
 
-        public static async Task InsertTotalAsync(Event json, RowInfo row, double total, string unit)
+        public static async Task InsertTotalAsync(string type, RowInfo row, double total)
         {
             var newJson = new Event()
             {
-                Id = $"{json.Id}_total",
+                Id = $"{row.Name}{GlobalVariable.RES_TOTAL}_{type}",
                 Value = total,
                 UnixTime = DateTimeOffset.Now.ToUnixTimeSeconds(),
             };

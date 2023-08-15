@@ -116,6 +116,7 @@ namespace esphomecsharp
             {
                 FinalRows.Add($"{total.Key}{RES_TOTAL}", new RowInfo()
                 {
+                    Name = page,
                     Unit = RES_KILLO_WATT,
                 });
             }
@@ -124,7 +125,8 @@ namespace esphomecsharp
             {
                 FinalRows.Add($"{total.Key}{RES_TOTAL}", new RowInfo()
                 {
-                    Unit = RES_KILLO_WATT,
+                    Name = page,
+                    Unit = RES_WATT,
                 });
             }
 

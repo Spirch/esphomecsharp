@@ -165,7 +165,7 @@ namespace esphomecsharp
         {
             if (GlobalVariable.TotalDailyEnergy.ContainsKey(json.Id))
             {
-                if (GlobalVariable.FinalRows.TryGetValue($"{json.Id}_total", out RowInfo row))
+                if (GlobalVariable.FinalRows.TryGetValue($"{json.Id}{GlobalVariable.RES_TOTAL}", out RowInfo row))
                 {
                     if (double.TryParse(json.Value.ToString(), out double value))
                     {
@@ -179,7 +179,7 @@ namespace esphomecsharp
                             Console.Write($"{GlobalVariable.RES_TOTAL_DAILY_ENERGY} {total.ToString(GlobalVariable.RES_DOUBLE_STRING)} {GlobalVariable.RES_KILLO_WATT}".PadRight(GlobalVariable.CONSOLE_RIGHT_PAD));
                         });
 
-                        await EspHomeContext.InsertTotalAsync(json, row, total, GlobalVariable.RES_KILLO_WATT);
+                        await EspHomeContext.InsertTotalAsync(GlobalVariable.RES_KILLO_WATT, row, total);
                     }
                 }
             }
@@ -190,7 +190,7 @@ namespace esphomecsharp
         {
             if (GlobalVariable.TotalPower.ContainsKey(json.Id))
             {
-                if (GlobalVariable.FinalRows.TryGetValue($"{json.Id}_total", out RowInfo row))
+                if (GlobalVariable.FinalRows.TryGetValue($"{json.Id}{GlobalVariable.RES_TOTAL}", out RowInfo row))
                 {
                     if (double.TryParse(json.Value.ToString(), out double value))
                     {
@@ -204,7 +204,7 @@ namespace esphomecsharp
                             Console.Write($"{GlobalVariable.RES_TOTAL_POWER} {total.ToString(GlobalVariable.RES_DOUBLE_STRING)} {GlobalVariable.RES_WATT}".PadRight(GlobalVariable.CONSOLE_RIGHT_PAD));
                         });
 
-                        await EspHomeContext.InsertTotalAsync(json, row, total, GlobalVariable.RES_WATT);
+                        await EspHomeContext.InsertTotalAsync(GlobalVariable.RES_WATT, row, total);
                     }
                 }
             }

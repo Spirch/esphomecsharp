@@ -14,5 +14,10 @@ namespace esphomecsharp.Model
         public int Row { get; set; }
         public int ServerTimeOut { get; set; }
         public Stopwatch LastActivity { get; set; }
+
+        public override string ToString()
+        {
+            return $"Name: {Name} FriendlyName: {FriendlyName} Row: {Row} LastActivity: {LastActivity.Elapsed.TotalSeconds}";
+        }
     }
 }

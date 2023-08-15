@@ -12,5 +12,10 @@ namespace esphomecsharp.Model
         public ConsoleColor Color { get; set; }
 
         public int? DbDescId { get; set; }
+
+        public override string ToString()
+        {
+            return $"Name: {Name} Unit: {Unit} Row: {Row} Col: {Col} DbDescId: {DbDescId}";
+        }
     }
 }
