@@ -60,7 +60,7 @@ namespace esphomecsharp
                         {
                             readPerSecond++;
 
-                            data = await reader.ReadLineAsync().WaitAsync(x.CancellationTokenSource.Token).ConfigureAwait(false);
+                            data = await reader.ReadLineAsync().WaitAsync(x.CancellationTokenSource.Token);
 
                             if (x.CancellationTokenSource.IsCancellationRequested)
                             {

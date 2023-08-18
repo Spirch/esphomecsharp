@@ -5,6 +5,7 @@ namespace esphomecsharp.Model
     sealed public class RowInfo
     {
         public string Name { get; set; }
+        public string FriendlyName { get; set; }
         public string Unit { get; set; }
         public int Row { get; set; }
         public int Padding { get; set; }

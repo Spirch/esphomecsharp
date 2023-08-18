@@ -52,10 +52,10 @@ namespace esphomecsharp.EF
                  .IsRequired()
                  .ValueGeneratedOnAdd();
 
-                x.Property(p => p.Value)
+                x.Property(p => p.Name)
                  .IsRequired();
 
-                x.HasIndex(p => p.Value)
+                x.HasIndex(p => p.Name)
                  .IsUnique();
             });
 

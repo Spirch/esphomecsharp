@@ -117,6 +117,7 @@ namespace esphomecsharp
                 FinalRows.Add($"{total.Key}{RES_TOTAL}", new RowInfo()
                 {
                     Name = page,
+                    FriendlyName = "Total Daily Energy",
                     Unit = RES_KILLO_WATT,
                 });
             }
@@ -126,6 +127,7 @@ namespace esphomecsharp
                 FinalRows.Add($"{total.Key}{RES_TOTAL}", new RowInfo()
                 {
                     Name = page,
+                    FriendlyName = "Total Power",
                     Unit = RES_WATT,
                 });
             }
@@ -153,6 +155,7 @@ namespace esphomecsharp
                        {
                            Padding = rowPadding,
                            Name = r.Name,
+                           FriendlyName = s.FriendlyName,
                            Unit = r.Unit,
 
                            Row = s.Row + TABLE_START_COL,
