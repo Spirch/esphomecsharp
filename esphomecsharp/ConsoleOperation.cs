@@ -76,7 +76,7 @@ namespace esphomecsharp
                 Queue.Add(() =>
                 {
                     Console.ForegroundColor = header.Color;
-                    Console.SetCursorPosition(GlobalVariable.CONSOLE_LEFT_POS + header.Col, header.Row);
+                    Console.SetCursorPosition(GlobalVariable.CONSOLE_LEFT_POS + header.Col, header.Server.Row);
                     Console.Write(header.Name.PadCenter(header.Padding));
                 });
             }
@@ -86,8 +86,8 @@ namespace esphomecsharp
                 Queue.Add(() =>
                 {
                     Console.ForegroundColor = header.Color;
-                    Console.SetCursorPosition(GlobalVariable.CONSOLE_LEFT_POS + header.Col, header.Row);
-                    Console.Write(header.Name.PadLeft(header.Padding));
+                    Console.SetCursorPosition(GlobalVariable.CONSOLE_LEFT_POS + header.Col, header.Server.Row);
+                    Console.Write(header.Server.FriendlyName.PadLeft(header.Padding));
                 });
             }
 
@@ -101,7 +101,7 @@ namespace esphomecsharp
                 Queue.Add(() =>
                 {
                     Console.ForegroundColor = x.Color;
-                    Console.SetCursorPosition(GlobalVariable.CONSOLE_LEFT_POS + row.Col, row.Row);
+                    Console.SetCursorPosition(GlobalVariable.CONSOLE_LEFT_POS + row.Col, row.Server.Row);
                     Console.Write(json.State.PadCenter(row.Padding));
                 });
 
@@ -179,7 +179,12 @@ namespace esphomecsharp
                             Console.Write($"{GlobalVariable.RES_TOTAL_DAILY_ENERGY} {total.ToString(GlobalVariable.RES_DOUBLE_STRING)} {GlobalVariable.RES_KILLO_WATT}".PadRight(GlobalVariable.CONSOLE_RIGHT_PAD));
                         });
 
-                        await EspHomeContext.InsertTotalAsync(GlobalVariable.RES_KILLO_WATT, row, total);
+                        
+                        if(GlobalVariable.InsertTotalDailyEnergy.Elapsed.TotalSeconds >= GlobalVariable.Settings.TotalInsertInterval)
+                        {
+                            await EspHomeContext.InsertTotalAsync(GlobalVariable.RES_KILLO_WATT, row, total);
+                            GlobalVariable.InsertTotalDailyEnergy.Restart();
+                        }
                     }
                 }
             }
@@ -204,7 +209,11 @@ namespace esphomecsharp
                             Console.Write($"{GlobalVariable.RES_TOTAL_POWER} {total.ToString(GlobalVariable.RES_DOUBLE_STRING)} {GlobalVariable.RES_WATT}".PadRight(GlobalVariable.CONSOLE_RIGHT_PAD));
                         });
 
-                        await EspHomeContext.InsertTotalAsync(GlobalVariable.RES_WATT, row, total);
+                        if(GlobalVariable.InsertTotalPower.Elapsed.TotalSeconds >= GlobalVariable.Settings.TotalInsertInterval)
+                        {
+                            await EspHomeContext.InsertTotalAsync(GlobalVariable.RES_WATT, row, total);
+                            GlobalVariable.InsertTotalPower.Restart();
+                        }
                     }
                 }
             }

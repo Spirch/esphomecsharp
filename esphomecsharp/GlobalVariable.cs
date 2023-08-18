@@ -54,6 +54,8 @@ namespace esphomecsharp
 
         public static readonly Stopwatch PrintTime;
         public static readonly Stopwatch PrintError;
+        public static readonly Stopwatch InsertTotalDailyEnergy;
+        public static readonly Stopwatch InsertTotalPower;
 
         public static readonly Settings Settings;
 
@@ -84,6 +86,8 @@ namespace esphomecsharp
 
             PrintTime = Stopwatch.StartNew();
             PrintError = Stopwatch.StartNew();
+            InsertTotalDailyEnergy = Stopwatch.StartNew();
+            InsertTotalPower = Stopwatch.StartNew();
         }
 
 
@@ -105,19 +109,23 @@ namespace esphomecsharp
 
                 RowHeader.Add(new RowInfo()
                 {
+                    Server = server,
                     Padding = serverPadding,
-                    Name = server.FriendlyName,
-                    Row = server.Row + TABLE_START_COL,
                     Color = server.Color,
                 });
+
+                server.Row += TABLE_START_COL;
             }
 
             foreach (var total in TotalDailyEnergy)
             {
                 FinalRows.Add($"{total.Key}{RES_TOTAL}", new RowInfo()
                 {
+                    Server = new()
+                    {
+                        FriendlyName = "Total Daily Energy",
+                    },
                     Name = page,
-                    FriendlyName = "Total Daily Energy",
                     Unit = RES_KILLO_WATT,
                 });
             }
@@ -126,8 +134,11 @@ namespace esphomecsharp
             {
                 FinalRows.Add($"{total.Key}{RES_TOTAL}", new RowInfo()
                 {
+                    Server = new()
+                    {
+                        FriendlyName = "Total Power",
+                    },
                     Name = page,
-                    FriendlyName = "Total Power",
                     Unit = RES_WATT,
                 });
             }
@@ -138,9 +149,12 @@ namespace esphomecsharp
             {
                 ColHeader.Add(new RowInfo()
                 {
+                    Server = new()
+                    {
+                        Row = TABLE_START_COL,
+                    },
                     Padding = rowPadding,
                     Name = header.Name,
-                    Row = TABLE_START_COL,
                     Col = header.Column * rowPadding,
                     Color = ConsoleColor.White,
                 });
@@ -153,12 +167,11 @@ namespace esphomecsharp
                        id = $"{r.Prefix}{s.Name}{r.Suffix}",
                        row = new RowInfo()
                        {
+                           Server = s,
                            Padding = rowPadding,
                            Name = r.Name,
-                           FriendlyName = s.FriendlyName,
                            Unit = r.Unit,
 
-                           Row = s.Row + TABLE_START_COL,
                            Col = r.Column * rowPadding,
                        }
                    };

@@ -76,7 +76,7 @@ namespace esphomecsharp
             {
                 row.DbDescId = await EspHomeDb.RowEntry
                                             .Where(x => x.Name == json.Id &&
-                                                        x.FriendlyName == row.FriendlyName)
+                                                        x.FriendlyName == row.Server.FriendlyName)
                                             .Select(x => x.RowEntryId)
                                             .FirstOrDefaultAsync();
 
@@ -84,7 +84,7 @@ namespace esphomecsharp
                 {
                     var newId = new RowEntry()
                     {
-                        FriendlyName = row.FriendlyName,
+                        FriendlyName = row.Server.FriendlyName,
                         Name = json.Id,
                         Unit = row.Unit,
                     };

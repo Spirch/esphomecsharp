@@ -4,10 +4,9 @@ namespace esphomecsharp.Model
 {
     sealed public class RowInfo
     {
+        public Server Server { get; set; }
         public string Name { get; set; }
-        public string FriendlyName { get; set; }
         public string Unit { get; set; }
-        public int Row { get; set; }
         public int Padding { get; set; }
         public int Col { get; set; }
         public ConsoleColor Color { get; set; }
@@ -16,7 +15,7 @@ namespace esphomecsharp.Model
 
         public override string ToString()
         {
-            return $"Name: {Name} Unit: {Unit} Row: {Row} Col: {Col} DbDescId: {DbDescId}";
+            return $"Name: {Name} Unit: {Unit} Col: {Col} DbDescId: {DbDescId}";
         }
     }
 }
