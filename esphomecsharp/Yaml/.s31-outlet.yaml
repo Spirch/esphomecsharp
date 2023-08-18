@@ -47,7 +47,7 @@ sensor:
   - platform: wifi_signal
     name: "${friendly_devicename}: WiFi Signal"
     id: "${devicename_no_dashes}_signal"
-    update_interval: 30s
+    update_interval: 60s
   - platform: cse7766
     current:
       name: "${friendly_devicename}: Current"
@@ -58,7 +58,7 @@ sensor:
       accuracy_decimals: 2
       filters:
         - or:
-          - throttle: 30s
+          - throttle: 60s
           - delta: 0.5
     voltage:
       name: "${friendly_devicename}: Voltage"
@@ -69,7 +69,7 @@ sensor:
       accuracy_decimals: 2
       filters:
         - or:
-          - throttle: 30s
+          - throttle: 60s
           - delta: 0.5
     power:
       name: "${friendly_devicename}: Power"
@@ -80,7 +80,7 @@ sensor:
       accuracy_decimals: 2
       filters:
         - or:
-          - throttle: 30s
+          - throttle: 60s
           - delta: 50
     update_interval: 1s
   - platform: total_daily_energy

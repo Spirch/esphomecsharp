@@ -1,7 +1,0 @@
-substitutions:
-  devicename: s31-outlet-5
-  friendly_devicename: s31-outlet-5
-  devicename_no_dashes: s31_outlet_5
-
-
-<<: !include .s31-outlet.yaml
