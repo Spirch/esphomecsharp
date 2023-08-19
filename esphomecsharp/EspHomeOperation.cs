@@ -1,4 +1,5 @@
 ﻿using esphomecsharp.EF.Model;
+using esphomecsharp.Model;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -18,16 +19,28 @@ namespace esphomecsharp
         {
             GlobalVariable.Servers.AsParallel().ForAll(async x =>
             {
+                EState lastState = EState.Unknown;
+
                 x.LastActivity = Stopwatch.StartNew();
 
                 while (Running)
                 {
-                    await Task.Delay(5000);
-
-                    if (x.LastActivity.Elapsed.TotalSeconds > x.ServerTimeOut)
+                    await Task.Delay(10000);
+                    
+                    if(lastState != x.State) 
                     {
-                        x.CancellationTokenSource.Cancel();
-                        x.LastActivity.Restart();
+                        await ConsoleOperation.PrintStateAsync(x.State, x.Row);
+
+                        lastState = x.State;
+                    }
+
+                    if(x.CancellationTokenSource != null) 
+                    {
+                        if (x.LastActivity.Elapsed.TotalSeconds > x.ServerTimeOut)
+                        {
+                            x.CancellationTokenSource.Cancel();
+                            x.LastActivity.Restart();
+                        }
                     }
                 }
             });
@@ -56,6 +69,7 @@ namespace esphomecsharp
                         using var stream = await client.GetStreamAsync(x.Uri);
                         using var reader = new StreamReader(stream);
 
+                        x.State = EState.Running;
                         while (Running)
                         {
                             readPerSecond++;
@@ -67,10 +81,18 @@ namespace esphomecsharp
                                 throw new Exception($"{x.Name} CancellationTokenSource.IsCancellationRequested");
                             }
 
-                            if (reader.EndOfStream)
+                            if(data == null)
                             {
-                                throw new Exception($"{x.Name} EndOfStream");
+                                throw new Exception($"{x.Name} data is null");
                             }
+
+                            //
+                            //this cause deadlock if the device lose electricity or is disconnected
+                            //
+                            //if (reader.EndOfStream)
+                            //{
+                            //    throw new Exception($"{x.Name} EndOfStream");
+                            //}
 
                             if (watchPerSecond.ElapsedMilliseconds > 1000)
                             {
@@ -105,7 +127,11 @@ namespace esphomecsharp
                     }
                     catch (Exception e)
                     {
-                        await ConsoleOperation.HandleErrorAsync(x.Name, e);
+                        if(x.State != EState.Stopped)
+                        {
+                            await ConsoleOperation.HandleErrorAsync(x.Name, e);
+                            x.State = EState.Stopped;
+                        }
 
                         await Task.Delay(5000);
                     }

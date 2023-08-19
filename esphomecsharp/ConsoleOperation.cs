@@ -271,6 +271,38 @@ namespace esphomecsharp
             await Task.CompletedTask;
         }
 
+        public static async Task PrintStateAsync(EState state, int row)
+        {
+            Console.SetCursorPosition(GlobalVariable.CONSOLE_LEFT_POS + -4, row);
+
+            if (state == EState.Running)
+            {
+                Queue.Add(() =>
+                {
+                    Console.ForegroundColor = ConsoleColor.Black;
+                    Console.WriteLine("@@@");
+                });
+            }
+            else if (state == EState.Stopped)
+            {
+                Queue.Add(() =>
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("!!!");
+                });
+            }
+            else
+            {
+                Queue.Add(() =>
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("???");
+                });
+            }
+
+            await Task.CompletedTask;
+        }
+
         public static string PadCenter(this string str, int length)
         {
             int spaces = length - str.Length;

@@ -14,6 +14,7 @@ namespace esphomecsharp.Model
         public int Row { get; set; }
         public int ServerTimeOut { get; set; }
         public Stopwatch LastActivity { get; set; }
+        public EState State { get; set; }
 
         public override string ToString()
         {
