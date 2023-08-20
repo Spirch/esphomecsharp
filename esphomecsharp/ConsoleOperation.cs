@@ -273,13 +273,13 @@ namespace esphomecsharp
 
         public static async Task PrintStateAsync(EState state, int row)
         {
-            Console.SetCursorPosition(GlobalVariable.CONSOLE_LEFT_POS + -4, row);
 
             if (state == EState.Running)
             {
                 Queue.Add(() =>
                 {
                     Console.ForegroundColor = ConsoleColor.Black;
+                    Console.SetCursorPosition(GlobalVariable.CONSOLE_LEFT_POS + -4, row);
                     Console.WriteLine("@@@");
                 });
             }
@@ -288,6 +288,7 @@ namespace esphomecsharp
                 Queue.Add(() =>
                 {
                     Console.ForegroundColor = ConsoleColor.Red;
+                    Console.SetCursorPosition(GlobalVariable.CONSOLE_LEFT_POS + -4, row);
                     Console.WriteLine("!!!");
                 });
             }
@@ -296,6 +297,7 @@ namespace esphomecsharp
                 Queue.Add(() =>
                 {
                     Console.ForegroundColor = ConsoleColor.Red;
+                    Console.SetCursorPosition(GlobalVariable.CONSOLE_LEFT_POS + -4, row);
                     Console.WriteLine("???");
                 });
             }

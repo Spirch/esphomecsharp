@@ -9,7 +9,7 @@ namespace esphomecsharp.Model
         public CancellationTokenSource CancellationTokenSource { get; set; }
         public string Name { get; set; }
         public string FriendlyName { get; set; }
-        public string Uri { get; set; }
+        public Uri Uri { get; set; }
         public ConsoleColor Color { get; set; }
         public int Row { get; set; }
         public int ServerTimeOut { get; set; }
