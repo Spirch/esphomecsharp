@@ -28,14 +28,10 @@ namespace esphomecsharp
         public const string RES_TOTAL_POWER = "Total Power:";
         public const string RES_TOTAL = "_total";
         public const string RES_NAME = "_name";
-
-        public const int TABLE_START_COL = 5;
-
         public const string RES_KILLO_WATT = "kW";
         public const string RES_WATT = "W";
-        public const string RES_DOUBLE_STRING = "0.00";
-        public const string RES_DATE_TIME = "yyyy-MM-dd HH:mm:ss";
 
+        public const int TABLE_START_COL = 5;
         public const int CONSOLE_LEFT_POS = 5;
         public const int CONSOLE_RIGHT_PAD = 35;
         public const int DATA_START = 6; //"data: ".Length;
@@ -47,10 +43,9 @@ namespace esphomecsharp
         public static readonly List<RowInfo> ColHeader;
         public static readonly List<RowInfo> RowHeader;
         public static readonly Dictionary<string, RowInfo> FinalRows;
-        public static readonly int ServerNamePad;
 
-        public static readonly Dictionary<string, double> TotalDailyEnergy;
-        public static readonly Dictionary<string, double> TotalPower;
+        public static readonly Dictionary<string, decimal> TotalDailyEnergy;
+        public static readonly Dictionary<string, decimal> TotalPower;
 
         public static readonly Stopwatch PrintTime;
         public static readonly Stopwatch PrintError;
@@ -81,8 +76,6 @@ namespace esphomecsharp
             var page1 = Settings.Pages.Values.FirstOrDefault();
 
             InitRows(settings, page1);
-
-            ServerNamePad = FinalRows.Values.Max(x => x.Name?.Length ?? 0) + 1;
 
             PrintTime = Stopwatch.StartNew();
             PrintError = Stopwatch.StartNew();

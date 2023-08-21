@@ -58,12 +58,10 @@ namespace esphomecsharp
             {
                 await EspHomeContext.InsertErrorAsync(new Error()
                 {
-                    Date = DateTime.Now.ToString(GlobalVariable.RES_DATE_TIME),
+                    Date = DateTime.Now.ToString(GlobalVariable.Settings.DateTimeFormat),
                     DeviceName = source,
                     Message = e.ToString(),
                 });
-
-                await PrintErrorAsync(true);
             });
 
             await Task.CompletedTask;
@@ -111,15 +109,16 @@ namespace esphomecsharp
             }
         }
 
-        public static async Task PrintErrorAsync(bool force = false)
+        public static async Task PrintErrorAsync()
         {
-            if (force || GlobalVariable.PrintError.ElapsedMilliseconds > 60000)
+            if (GlobalVariable.PrintError.Elapsed.TotalSeconds > GlobalVariable.Settings.ShowErrorInterval)
             {
                 Queue.Add(async () =>
                 {
+                    var count = await EspHomeContext.GetErrorCountAsync();
+
                     Console.ForegroundColor = ConsoleColor.Red;
                     Console.SetCursorPosition(GlobalVariable.CONSOLE_LEFT_POS, 0);
-                    var count = await EspHomeContext.GetErrorCountAsync();
                     if (count == 0)
                     {
                         Console.Write("".PadRight(GlobalVariable.CONSOLE_RIGHT_PAD));
@@ -133,14 +132,6 @@ namespace esphomecsharp
                 GlobalVariable.PrintError.Restart();
             }
 
-            //if (!force)
-            //{
-            //    int val;
-
-            //    if ((val = Random.Shared.Next(1, 100)) >= 98)
-            //        throw new Exception($"val: {val}");
-            //}
-
             await Task.CompletedTask;
         }
 
@@ -152,7 +143,7 @@ namespace esphomecsharp
                 {
                     Console.ForegroundColor = ConsoleColor.White;
                     Console.SetCursorPosition(GlobalVariable.CONSOLE_LEFT_POS, 1);
-                    Console.Write(DateTime.Now.ToString(GlobalVariable.RES_DATE_TIME).PadRight(GlobalVariable.CONSOLE_RIGHT_PAD));
+                    Console.Write(DateTime.Now.ToString(GlobalVariable.Settings.DateTimeFormat).PadRight(GlobalVariable.CONSOLE_RIGHT_PAD));
                 });
 
                 GlobalVariable.PrintTime.Restart();
@@ -167,24 +158,21 @@ namespace esphomecsharp
             {
                 if (GlobalVariable.FinalRows.TryGetValue($"{json.Id}{GlobalVariable.RES_TOTAL}", out RowInfo row))
                 {
-                    if (double.TryParse(json.Value.ToString(), out double value))
-                    {
-                        GlobalVariable.TotalDailyEnergy[json.Id] = value;
-                        var total = GlobalVariable.TotalDailyEnergy.Sum(x => x.Value);
+                    GlobalVariable.TotalDailyEnergy[json.Id] = json.Data;
+                    var total = GlobalVariable.TotalDailyEnergy.Sum(x => x.Value);
 
-                        Queue.Add(() =>
-                        {
-                            Console.ForegroundColor = ConsoleColor.White;
-                            Console.SetCursorPosition(GlobalVariable.CONSOLE_LEFT_POS, 2);
-                            Console.Write($"{GlobalVariable.RES_TOTAL_DAILY_ENERGY} {total.ToString(GlobalVariable.RES_DOUBLE_STRING)} {GlobalVariable.RES_KILLO_WATT}".PadRight(GlobalVariable.CONSOLE_RIGHT_PAD));
-                        });
+                    Queue.Add(() =>
+                    {
+                        Console.ForegroundColor = ConsoleColor.White;
+                        Console.SetCursorPosition(GlobalVariable.CONSOLE_LEFT_POS, 2);
+                        Console.Write($"{GlobalVariable.RES_TOTAL_DAILY_ENERGY} {total} {GlobalVariable.RES_KILLO_WATT}".PadRight(GlobalVariable.CONSOLE_RIGHT_PAD));
+                    });
 
                         
-                        if(GlobalVariable.InsertTotalDailyEnergy.Elapsed.TotalSeconds >= GlobalVariable.Settings.TotalInsertInterval)
-                        {
-                            await EspHomeContext.InsertTotalAsync(GlobalVariable.RES_KILLO_WATT, row, total);
-                            GlobalVariable.InsertTotalDailyEnergy.Restart();
-                        }
+                    if(GlobalVariable.InsertTotalDailyEnergy.Elapsed.TotalSeconds >= GlobalVariable.Settings.TotalInsertInterval)
+                    {
+                        await EspHomeContext.InsertTotalAsync(GlobalVariable.RES_KILLO_WATT, row, total);
+                        GlobalVariable.InsertTotalDailyEnergy.Restart();
                     }
                 }
             }
@@ -197,23 +185,20 @@ namespace esphomecsharp
             {
                 if (GlobalVariable.FinalRows.TryGetValue($"{json.Id}{GlobalVariable.RES_TOTAL}", out RowInfo row))
                 {
-                    if (double.TryParse(json.Value.ToString(), out double value))
+                    GlobalVariable.TotalPower[json.Id] = json.Data;
+                    var total = GlobalVariable.TotalPower.Sum(x => x.Value);
+
+                    Queue.Add(() =>
                     {
-                        GlobalVariable.TotalPower[json.Id] = value;
-                        var total = GlobalVariable.TotalPower.Sum(x => x.Value);
+                        Console.ForegroundColor = ConsoleColor.White;
+                        Console.SetCursorPosition(GlobalVariable.CONSOLE_LEFT_POS, 3);
+                        Console.Write($"{GlobalVariable.RES_TOTAL_POWER} {total} {GlobalVariable.RES_WATT}".PadRight(GlobalVariable.CONSOLE_RIGHT_PAD));
+                    });
 
-                        Queue.Add(() =>
-                        {
-                            Console.ForegroundColor = ConsoleColor.White;
-                            Console.SetCursorPosition(GlobalVariable.CONSOLE_LEFT_POS, 3);
-                            Console.Write($"{GlobalVariable.RES_TOTAL_POWER} {total.ToString(GlobalVariable.RES_DOUBLE_STRING)} {GlobalVariable.RES_WATT}".PadRight(GlobalVariable.CONSOLE_RIGHT_PAD));
-                        });
-
-                        if(GlobalVariable.InsertTotalPower.Elapsed.TotalSeconds >= GlobalVariable.Settings.TotalInsertInterval)
-                        {
-                            await EspHomeContext.InsertTotalAsync(GlobalVariable.RES_WATT, row, total);
-                            GlobalVariable.InsertTotalPower.Restart();
-                        }
+                    if(GlobalVariable.InsertTotalPower.Elapsed.TotalSeconds >= GlobalVariable.Settings.TotalInsertInterval)
+                    {
+                        await EspHomeContext.InsertTotalAsync(GlobalVariable.RES_WATT, row, total);
+                        GlobalVariable.InsertTotalPower.Restart();
                     }
                 }
             }

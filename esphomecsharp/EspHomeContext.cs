@@ -113,7 +113,7 @@ namespace esphomecsharp
             await Task.CompletedTask;
         }
 
-        public static async Task InsertTotalAsync(string type, RowInfo row, double total)
+        public static async Task InsertTotalAsync(string type, RowInfo row, decimal total)
         {
             var newJson = new Event()
             {

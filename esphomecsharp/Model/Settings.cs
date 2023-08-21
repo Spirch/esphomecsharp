@@ -10,6 +10,8 @@ namespace esphomecsharp.Model
     {
         public string DBFileName { get; init; }
         public int TotalInsertInterval { get; init; }
+        public int ShowErrorInterval { get; init; }
+        public string DateTimeFormat { get; init; }
         public Dictionary<string, string> Pages { get; init; }
     }
 }

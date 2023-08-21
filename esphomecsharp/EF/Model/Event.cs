@@ -18,13 +18,16 @@ namespace esphomecsharp.EF.Model
         {
             get
             {
+                if(Value is decimal valDec)
+                    return valDec;
+
                 if (decimal.TryParse(Value.ToString(), NumberStyles.Number | NumberStyles.AllowExponent, null, out decimal dec))
                     return Truncate(dec, 2);
 
                 if(bool.TryParse(Value.ToString(), out bool bo))
                     return Convert.ToDecimal(bo);
 
-                return Value.ToString();
+                throw new FormatException(Value.ToString());
             }
             set
             {
@@ -33,7 +36,7 @@ namespace esphomecsharp.EF.Model
         }
 
         public string Id { get; set; }
-        public dynamic Value { get; set; }
+        public object Value { get; set; }
         public string Name { get; set; }
         public string State { get; set; }
 
