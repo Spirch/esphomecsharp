@@ -98,9 +98,11 @@ namespace esphomecsharp
             {
                 Queue.Add(() =>
                 {
+                    row.LastValue = json.State.PadCenter(row.Padding);
+
                     Console.ForegroundColor = x.Color;
                     Console.SetCursorPosition(GlobalVariable.CONSOLE_LEFT_POS + row.Col, row.Server.Row);
-                    Console.Write(json.State.PadCenter(row.Padding));
+                    Console.Write(row.LastValue);
                 });
 
                 await EspHomeContext.InsertRowAsync(json, row);

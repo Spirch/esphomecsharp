@@ -1,15 +1,11 @@
-﻿using System;
+﻿using esphomecsharp.Model;
+using System;
 using System.Globalization;
 
 namespace esphomecsharp.EF.Model
 {
-    sealed public class Event : IDbItem
+    sealed public class Event : EspEvent, IDbItem
     {
-        public Event()
-        {
-                
-        }
-
         public long EventId { get; set; }
 
         public int RowEntryId { get; set; }
@@ -18,16 +14,7 @@ namespace esphomecsharp.EF.Model
         {
             get
             {
-                if(Value is decimal valDec)
-                    return valDec;
-
-                if (decimal.TryParse(Value.ToString(), NumberStyles.Number | NumberStyles.AllowExponent, null, out decimal dec))
-                    return Truncate(dec, 2);
-
-                if(bool.TryParse(Value.ToString(), out bool bo))
-                    return Convert.ToDecimal(bo);
-
-                throw new FormatException(Value.ToString());
+                return ConvertValue();
             }
             set
             {
@@ -35,15 +22,23 @@ namespace esphomecsharp.EF.Model
             }
         }
 
-        public string Id { get; set; }
-        public object Value { get; set; }
-        public string Name { get; set; }
-        public string State { get; set; }
-
         public RowEntry EspHomeId { get; set; }
 
+        private decimal ConvertValue()
+        {
+            if (Value is decimal valDec)
+                return valDec;
 
-        decimal Truncate(decimal d, byte decimals)
+            if (decimal.TryParse(Value.ToString(), NumberStyles.Number | NumberStyles.AllowExponent, null, out decimal dec))
+                return Truncate(dec, 2);
+
+            if (bool.TryParse(Value.ToString(), out bool bo))
+                return Convert.ToDecimal(bo);
+
+            throw new FormatException(Value.ToString());
+        }
+
+        private static decimal Truncate(decimal d, byte decimals)
         {
             decimal r = Math.Round(d, decimals);
 
