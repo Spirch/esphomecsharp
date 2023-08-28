@@ -136,7 +136,7 @@ namespace esphomecsharp
                 });
             }
 
-            int rowPadding = rawRows.Max(x => x.Name.Length) + 2;
+            int rowPadding = Math.Max(rawRows.Max(x => x.Name.Length) + 2, serverPadding);
 
             foreach (var header in rawRows)
             {
