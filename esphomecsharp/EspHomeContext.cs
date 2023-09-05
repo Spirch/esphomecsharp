@@ -38,7 +38,7 @@ namespace esphomecsharp
                 }
                 catch (Exception e)
                 {
-                    await ConsoleOperation.HandleErrorAsync("EspHomeContext.RunAndProcess", e);
+                    await e.HandleErrorAsync("EspHomeContext.RunAndProcess");
 
                     await Task.Delay(5000);
                 }
@@ -60,6 +60,7 @@ namespace esphomecsharp
                 test.Database.EnsureCreated();
 
                 await test.Database.OpenConnectionAsync();
+
                 await test.Database.ExecuteSqlRawAsync("PRAGMA journal_mode=DELETE");
 
                 await test.Database.ExecuteSqlRawAsync("CREATE VIEW MinMaxValue as  \r\nSELECT row.Name \r\n        , row.FriendlyName \r\n        , data.MaxValue   \r\n        , data.MinValue   \r\n        , row.Unit   \r\n   FROM [RowEntry] row   \r\n   inner join    \r\n   (   \r\n    SELECT [RowEntryId]   \r\n        ,max([Data]) MaxValue   \r\n        ,min([Data]) MinValue   \r\n    FROM [Event]   \r\n    group by RowEntryId   \r\n   ) data on data.[RowEntryId] = row.[RowEntryId]   \r\n order by row.Unit, row.FriendlyName");

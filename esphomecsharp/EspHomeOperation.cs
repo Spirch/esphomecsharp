@@ -1,5 +1,6 @@
 ﻿using esphomecsharp.EF.Model;
 using esphomecsharp.Model;
+using esphomecsharp.Screen;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -41,7 +42,7 @@ namespace esphomecsharp
         {
             if (lastState != server.State)
             {
-                await ConsoleOperation.PrintStateAsync(server.State, server.Row);
+                await Dashboard.PrintStateAsync(server.State, server.Row);
 
                 return server.State;
             }
@@ -138,15 +139,15 @@ namespace esphomecsharp
 
             json.UnixTime = DateTimeOffset.Now.ToUnixTimeSeconds();
 
-            await ConsoleOperation.PrintErrorAsync();
+            await Header.PrintErrorAsync();
 
-            await ConsoleOperation.PrintTimeAsync();
+            await Header.PrintTimeAsync();
 
-            await ConsoleOperation.TotalDailyEnergyAsync(json);
+            await Header.TotalDailyEnergyAsync(json);
 
-            await ConsoleOperation.TotalPowerAsync(json);
+            await Header.TotalPowerAsync(json);
 
-            await ConsoleOperation.PrintRowAsync(server, json);
+            await Dashboard.PrintRowAsync(server, json);
         }
 
         private static async Task<PingReply> PingAsync(string host)
@@ -162,7 +163,7 @@ namespace esphomecsharp
         {
             if (server.State != EState.Stopped)
             {
-                await ConsoleOperation.HandleErrorAsync(server.Name, e);
+                await e.HandleErrorAsync(server.Name);
                 server.State = EState.Stopped;
             }
 

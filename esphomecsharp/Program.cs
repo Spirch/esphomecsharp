@@ -1,4 +1,5 @@
 ﻿using esphomecsharp;
+using esphomecsharp.Screen;
 using System.Threading.Tasks;
 
 await EspHomeContext.CreateDBIfNotExistAsync();
@@ -6,7 +7,9 @@ await EspHomeContext.CreateDBIfNotExistAsync();
 EspHomeOperation.Running = true;
 await EspHomeOperation.MonitorConnectionTimeoutAsync();
 
-await ConsoleOperation.PrintTableAsync();
+await Header.PrintHelp();
+
+await Dashboard.PrintTableAsync();
 
 await EspHomeOperation.FetchDeviceDataAsync();
 
