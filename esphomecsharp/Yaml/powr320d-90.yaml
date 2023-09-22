@@ -1,0 +1,295 @@
+﻿# Basic Config
+substitutions:
+  devicename: powr320d-90
+  friendly_devicename: powr320d-90
+  devicename_no_dashes: powr320d_90
+
+esphome:
+  name: ${devicename}
+  friendly_name: "${friendly_devicename}"
+#  on_boot: # Set the initial state of the template switch to the actual relay state. This will NOT change the state.
+#    priority: 250.0 # Wait until WiFi is connected to allow the sensor some time to settle
+#    then:
+#      - if:
+#          condition:
+#            lambda: 'return id(v_sensor).state > 10;'
+#          then:
+#            - switch.turn_on: relay_1
+#          else:
+#            - switch.turn_off: relay_1
+
+esp32:
+  board: nodemcu-32s
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  fast_connect: true
+  domain: .lan
+
+  ap:
+    ssid: "${friendly_devicename} fallback"
+    password: !secret wifi_password
+
+logger:
+
+ota:
+
+web_server:
+  port: 80
+  local: true
+  include_internal: true
+
+esp32_ble_tracker:
+  scan_parameters:
+    interval: 1100ms
+    window: 1100ms
+    active: true
+
+uart:
+  rx_pin: GPIO16
+  baud_rate: 4800
+  parity: even
+
+time:
+  - platform: sntp
+    id: home
+    timezone: EST5EDT,M3.2.0,M11.1.0
+    update_interval: 15min
+    servers:
+      - 10.0.0.1
+
+sensor:
+  - platform: wifi_signal
+    name: "${friendly_devicename}: WiFi Signal"
+    id: "${devicename_no_dashes}_signal"
+    update_interval: 60s
+  - platform: cse7766
+    current:
+      name: "${friendly_devicename}: Current"
+      id: "${devicename_no_dashes}_current"
+      state_class: measurement
+      device_class: current
+      unit_of_measurement: A
+      accuracy_decimals: 2
+      filters:
+        - or:
+          - throttle: 60s
+          - delta: 0.5
+    voltage:
+      name: "${friendly_devicename}: Voltage"
+      id: "${devicename_no_dashes}_voltage"
+      state_class: measurement
+      device_class: voltage
+      unit_of_measurement: V
+      accuracy_decimals: 2
+      filters:
+        - or:
+          - throttle: 60s
+          - delta: 0.5
+    power:
+      name: "${friendly_devicename}: Power"
+      id: "${devicename_no_dashes}_power"
+      state_class: measurement
+      device_class: power
+      unit_of_measurement: W
+      accuracy_decimals: 2
+      filters:
+        - or:
+          - throttle: 60s
+          - delta: 50
+    update_interval: 1s
+  - platform: total_daily_energy
+    name: "${friendly_devicename}: Daily Energy"
+    id: "${devicename_no_dashes}_power_daily"
+    power_id: "${devicename_no_dashes}_power"
+    filters:
+      # Multiplication factor from W to kW is 0.001
+      - multiply: 0.001
+    unit_of_measurement: kW
+    state_class: total_increasing
+    device_class: energy
+    # 3 shows each W consumed, 2 every 10W, 1 every 100W
+    accuracy_decimals: 2
+
+  - platform: uptime
+    id: uptime_sensor
+    internal: True
+    on_raw_value:
+      then:
+        - text_sensor.template.publish:
+            id: uptime_human
+            state: !lambda |-
+              int seconds = round(id(uptime_sensor).raw_state);
+              int days = seconds / (24 * 3600);
+              seconds = seconds % (24 * 3600);
+              int hours = seconds / 3600;
+              seconds = seconds % 3600;
+              int minutes = seconds /  60;
+              seconds = seconds % 60;
+              return (
+                (days ? to_string(days) + "d " : "") +
+                (hours ? to_string(hours) + "h " : "") +
+                (minutes ? to_string(minutes) + "m " : "") +
+                (to_string(seconds) + "s")
+              ).c_str();
+
+  - platform: template
+    name: ${friendly_devicename} ESP32 Internal Temp
+    device_class: temperature
+    unit_of_measurement: °C
+    id: esp32_temp
+    lambda: return temperatureRead();
+
+  - platform: template
+    name: ${friendly_devicename} Power Factor
+    device_class: power_factor
+    id: power_factor
+    lambda: return id(${devicename_no_dashes}_power).state / id(${devicename_no_dashes}_voltage).state / id(${devicename_no_dashes}_current).state;
+
+  - platform: esp32_hall
+    name: ${friendly_devicename} ESP32 Hall Sensor
+    update_interval: 60s
+
+binary_sensor:
+  - platform: gpio
+    pin: GPIO00
+    id: reset
+    internal: true
+    filters:
+      - invert:
+      - delayed_off: 10ms
+    on_click:
+#      - max_length: 350ms # short press to toggle the relay
+#        then:
+#          switch.toggle: relay_1
+#      - min_length: 360ms # long press to cycle display info
+#        max_length: 3s
+        then:
+          - lambda: id(page).publish_state(!id(page).state);
+  - platform: template # this is a fake sensor to tell the screen which info to show on display
+    id: page
+    publish_initial_state: true
+    internal: true
+#  - platform: template
+#    name: $friendly_name Load
+#    id: load_on
+#    lambda: |-
+#      if (isnan(id(w_sensor).state)) {
+#        return {};
+#      } else if (id(w_sensor).state > 4) {
+#        // Running
+#        return true;
+#      } else {
+#        // Not running
+#        return false;
+#      }
+
+display:
+  platform: tm1621
+  id: tm1621_display
+  cs_pin: GPIO25
+  data_pin: GPIO14
+  read_pin: GPIO26
+  write_pin: GPIO27
+  lambda: |-
+    if (id(page).state) {
+      it.display_voltage(true);
+      it.display_kwh(false);
+      it.printf(0, "%.1f", id(${devicename_no_dashes}_voltage).state);
+      it.printf(1, "%.1f", id(${devicename_no_dashes}_current).state);
+    } else {  
+      it.display_voltage(false);
+      it.display_kwh(true);
+      it.printf(0, "%.1f", id(${devicename_no_dashes}_power_daily).state);
+      it.printf(1, "%.1f", id(${devicename_no_dashes}_power).state);
+    }
+
+output:
+  - platform: ledc
+    id: led
+    pin:
+      number: GPIO18
+      inverted: True
+
+switch:
+  - platform: template
+    name: "${friendly_devicename}"
+    icon: "mdi:power-socket-us"
+    optimistic: true
+    id: relay_1
+    restore_mode: ALWAYS_ON
+    turn_off_action:
+      - switch.turn_on: relay_off
+    turn_on_action:
+      - switch.turn_on: relay_on
+  - platform: gpio
+    restore_mode: ALWAYS_ON
+    internal: true
+    id: relay_off
+    pin: GPIO04
+    on_turn_on:
+      - delay: 500ms
+      - switch.turn_off: relay_off # bi-stable relay so no need to keep on
+      - light.turn_off: switch_led
+    interlock: [relay_on]
+  - platform: gpio
+    restore_mode: ALWAYS_ON
+    internal: true
+    id: relay_on
+    pin: GPIO02
+    on_turn_on:
+      - delay: 500ms
+      - switch.turn_off: relay_on  # bi-stable relay so no need to keep on
+      - light.turn_on: switch_led
+    interlock: [relay_off]
+#  - platform: restart
+#    name: $friendly_name Restart
+
+text_sensor:
+  - platform: template
+    name: ${friendly_devicename} Uptime
+    id: uptime_human
+    icon: mdi:clock-start
+  - platform: wifi_info
+    ip_address:
+      name: "${friendly_devicename}: IP"
+      icon: "mdi:ip-outline"
+    ssid:
+      name: "${friendly_devicename}: SSID"
+      icon: "mdi:wifi-settings"
+    bssid:
+      name: "${friendly_devicename}: BSSID"
+      icon: "mdi:wifi-settings"
+    mac_address:
+      name: "${friendly_devicename}: MAC"
+      icon: "mdi:network-outline"
+  - platform: version
+    name: "ESPHome Version"
+    hide_timestamp: true
+
+light:
+  - platform: monochromatic
+    id: switch_led
+    output: led
+    internal: True
+  - platform: status_led
+    id: wifi_status_led
+    internal: True
+    pin:
+      number: GPIO05
+      inverted: True
+
+interval:
+  - interval: 30s
+    then:
+      if:
+        condition:
+          wifi.connected:
+        then:
+          - light.turn_on: wifi_status_led
+        else:
+          - light.turn_off: wifi_status_led
+  - interval: 15s
+    then:
+      - lambda: id(page).publish_state(!id(page).state);
