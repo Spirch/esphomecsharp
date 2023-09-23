@@ -288,9 +288,18 @@ interval:
         condition:
           wifi.connected:
         then:
-          - light.turn_on: wifi_status_led
+          if:
+            condition:
+              light.is_off: wifi_status_led
+            then:
+              light.turn_on: wifi_status_led
         else:
-          - light.turn_off: wifi_status_led
+          if:
+            condition:
+              light.is_on: wifi_status_led
+            then:
+              light.turn_off: wifi_status_led
+              
   - interval: 15s
     then:
       - lambda: id(page).publish_state(!id(page).state);
