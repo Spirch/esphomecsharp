@@ -206,12 +206,12 @@ display:
       it.printf(1, "%.1f", id(${devicename_no_dashes}_power).state);
     }
 
-output:
-  - platform: ledc
-    id: led
-    pin:
-      number: GPIO18
-      inverted: True
+#output:
+#  - platform: ledc
+#    id: led
+#    pin:
+#      number: GPIO18
+#      inverted: True
 
 switch:
   - platform: template
@@ -232,7 +232,7 @@ switch:
     on_turn_on:
       - delay: 500ms
       - switch.turn_off: relay_off # bi-stable relay so no need to keep on
-      - light.turn_off: switch_led
+#      - light.turn_off: switch_led
     interlock: [relay_on]
   - platform: gpio
     restore_mode: ALWAYS_ON
@@ -242,7 +242,7 @@ switch:
     on_turn_on:
       - delay: 500ms
       - switch.turn_off: relay_on  # bi-stable relay so no need to keep on
-      - light.turn_on: switch_led
+#      - light.turn_on: switch_led
     interlock: [relay_off]
 #  - platform: restart
 #    name: $friendly_name Restart
@@ -269,36 +269,36 @@ text_sensor:
     name: "ESPHome Version"
     hide_timestamp: true
 
-light:
-  - platform: monochromatic
-    id: switch_led
-    output: led
-    internal: True
-  - platform: status_led
-    id: wifi_status_led
-    internal: True
-    pin:
-      number: GPIO05
-      inverted: True
+#light:
+#  - platform: monochromatic
+#    id: switch_led
+#    output: led
+#    internal: True
+#  - platform: status_led
+#    id: wifi_status_led
+#    internal: True
+#    pin:
+#      number: GPIO05
+#      inverted: True
 
 interval:
-  - interval: 30s
-    then:
-      if:
-        condition:
-          wifi.connected:
-        then:
-          if:
-            condition:
-              light.is_off: wifi_status_led
-            then:
-              light.turn_on: wifi_status_led
-        else:
-          if:
-            condition:
-              light.is_on: wifi_status_led
-            then:
-              light.turn_off: wifi_status_led
+#  - interval: 30s
+#    then:
+#      if:
+#        condition:
+#          wifi.connected:
+#        then:
+#          if:
+#            condition:
+#              light.is_off: wifi_status_led
+#            then:
+#              light.turn_on: wifi_status_led
+#        else:
+#          if:
+#            condition:
+#              light.is_on: wifi_status_led
+#            then:
+#              light.turn_off: wifi_status_led
               
   - interval: 15s
     then:
