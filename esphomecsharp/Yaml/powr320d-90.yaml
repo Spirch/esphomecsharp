@@ -1,5 +1,4 @@
-﻿# Basic Config
-substitutions:
+﻿substitutions:
   devicename: powr320d-90
   friendly_devicename: powr320d-90
   devicename_no_dashes: powr320d_90
@@ -7,16 +6,6 @@ substitutions:
 esphome:
   name: ${devicename}
   friendly_name: "${friendly_devicename}"
-#  on_boot: # Set the initial state of the template switch to the actual relay state. This will NOT change the state.
-#    priority: 250.0 # Wait until WiFi is connected to allow the sensor some time to settle
-#    then:
-#      - if:
-#          condition:
-#            lambda: 'return id(v_sensor).state > 10;'
-#          then:
-#            - switch.turn_on: relay_1
-#          else:
-#            - switch.turn_off: relay_1
 
 esp32:
   board: nodemcu-32s
@@ -39,12 +28,6 @@ web_server:
   port: 80
   local: true
   include_internal: true
-
-#esp32_ble_tracker:
-#  scan_parameters:
-#    interval: 1100ms
-#    window: 1100ms
-#    active: true
 
 uart:
   rx_pin: GPIO16
@@ -112,29 +95,6 @@ sensor:
     # 3 shows each W consumed, 2 every 10W, 1 every 100W
     accuracy_decimals: 2
     restore: false
-
-#  - platform: uptime
-#    id: uptime_sensor
-#    internal: True
-#    on_raw_value:
-#      then:
-#        - text_sensor.template.publish:
-#            id: uptime_human
-#            state: !lambda |-
-#              int seconds = round(id(uptime_sensor).raw_state);
-#              int days = seconds / (24 * 3600);
-#              seconds = seconds % (24 * 3600);
-#              int hours = seconds / 3600;
-#              seconds = seconds % 3600;
-#              int minutes = seconds /  60;
-#              seconds = seconds % 60;
-#              return (
-#                (days ? to_string(days) + "d " : "") +
-#                (hours ? to_string(hours) + "h " : "") +
-#                (minutes ? to_string(minutes) + "m " : "") +
-#                (to_string(seconds) + "s")
-#              ).c_str();
-
   - platform: template
     name: ${friendly_devicename} ESP32 Internal Temp
     device_class: temperature
@@ -142,49 +102,20 @@ sensor:
     id: esp32_temp
     lambda: return temperatureRead();
 
-#  - platform: template
-#    name: ${friendly_devicename} Power Factor
-#    device_class: power_factor
-#    id: power_factor
-#    lambda: return id(${devicename_no_dashes}_power).state / id(${devicename_no_dashes}_voltage).state / id(${devicename_no_dashes}_current).state;
-
-#  - platform: esp32_hall
-#    name: ${friendly_devicename} ESP32 Hall Sensor
-#    update_interval: 60s
-
 binary_sensor:
-#  - platform: gpio
-#    pin: GPIO00
-#    id: reset
-#    internal: true
-#    filters:
-#      - invert:
-#      - delayed_off: 10ms
-#    on_click:
-#      - max_length: 350ms # short press to toggle the relay
-#        then:
-#          switch.toggle: relay_1
-#      - min_length: 360ms # long press to cycle display info
-#        max_length: 3s
-#        then:
-#          - lambda: id(page).publish_state(!id(page).state);
+  - platform: gpio
+    pin: GPIO00
+    id: reset
+    internal: true
+    filters:
+      - invert:
+      - delayed_off: 10ms
+    on_click:
+      lambda: id(page).publish_state(!id(page).state);
   - platform: template # this is a fake sensor to tell the screen which info to show on display
     id: page
     publish_initial_state: true
     internal: true
-#  - platform: template
-#    name: $friendly_name Load
-#    id: load_on
-#    lambda: |-
-#      if (isnan(id(w_sensor).state)) {
-#        return {};
-#      } else if (id(w_sensor).state > 4) {
-#        // Running
-#        return true;
-#      } else {
-#        // Not running
-#        return false;
-#      }
 
 display:
   platform: tm1621
@@ -206,13 +137,6 @@ display:
       it.printf(1, "%.1f", id(${devicename_no_dashes}_power).state);
     }
 
-#output:
-#  - platform: ledc
-#    id: led
-#    pin:
-#      number: GPIO18
-#      inverted: True
-
 switch:
   - platform: template
     name: "${friendly_devicename}"
@@ -232,7 +156,6 @@ switch:
     on_turn_on:
       - delay: 500ms
       - switch.turn_off: relay_off # bi-stable relay so no need to keep on
-#      - light.turn_off: switch_led
     interlock: [relay_on]
   - platform: gpio
     restore_mode: ALWAYS_ON
@@ -242,16 +165,9 @@ switch:
     on_turn_on:
       - delay: 500ms
       - switch.turn_off: relay_on  # bi-stable relay so no need to keep on
-#      - light.turn_on: switch_led
     interlock: [relay_off]
-#  - platform: restart
-#    name: $friendly_name Restart
 
 text_sensor:
-#  - platform: template
-#    name: ${friendly_devicename} Uptime
-#    id: uptime_human
-#    icon: mdi:clock-start
   - platform: wifi_info
     ip_address:
       name: "${friendly_devicename}: IP"
@@ -268,38 +184,3 @@ text_sensor:
   - platform: version
     name: "ESPHome Version"
     hide_timestamp: true
-
-#light:
-#  - platform: monochromatic
-#    id: switch_led
-#    output: led
-#    internal: True
-#  - platform: status_led
-#    id: wifi_status_led
-#    internal: True
-#    pin:
-#      number: GPIO05
-#      inverted: True
-
-interval:
-#  - interval: 30s
-#    then:
-#      if:
-#        condition:
-#          wifi.connected:
-#        then:
-#          if:
-#            condition:
-#              light.is_off: wifi_status_led
-#            then:
-#              light.turn_on: wifi_status_led
-#        else:
-#          if:
-#            condition:
-#              light.is_on: wifi_status_led
-#            then:
-#              light.turn_off: wifi_status_led
-              
-  - interval: 15s
-    then:
-      - lambda: id(page).publish_state(!id(page).state);
