@@ -58,7 +58,7 @@ namespace esphomecsharp.Screen
             }
             //else
             //{
-            //    Debug.Print (json.Id);
+            //    Debug.Print(json.Id);
             //}
         }
 
