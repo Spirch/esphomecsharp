@@ -3,6 +3,7 @@ using esphomecsharp.Model;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,7 +16,7 @@ namespace esphomecsharp.Screen
         {
             foreach (var header in GlobalVariable.ColHeader)
             {
-                ConsoleOperation.AddQueue(() =>
+                ConsoleOperation.AddQueue(EConsoleScreen.Dashboard, () =>
                 {
                     Console.ForegroundColor = header.Color;
                     Console.SetCursorPosition(GlobalVariable.CONSOLE_LEFT_POS + header.Col, header.Server.Row);
@@ -25,7 +26,7 @@ namespace esphomecsharp.Screen
 
             foreach (var header in GlobalVariable.RowHeader)
             {
-                ConsoleOperation.AddQueue(() =>
+                ConsoleOperation.AddQueue(EConsoleScreen.Dashboard, () =>
                 {
                     Console.ForegroundColor = header.Color;
                     Console.SetCursorPosition(GlobalVariable.CONSOLE_LEFT_POS + header.Col, header.Server.Row);
@@ -40,10 +41,12 @@ namespace esphomecsharp.Screen
         {
             if (GlobalVariable.FinalRows.TryGetValue(json.Id, out RowInfo row))
             {
-                ConsoleOperation.AddQueue(() =>
+                ConsoleOperation.AddQueue(EConsoleScreen.Dashboard, () =>
                 {
                     row.LastValue = json.State.PadCenter(row.Padding);
-
+                },
+                () =>
+                {
                     Console.ForegroundColor = x.Color;
                     Console.SetCursorPosition(GlobalVariable.CONSOLE_LEFT_POS + row.Col, row.Server.Row);
                     Console.Write(row.LastValue);
@@ -53,6 +56,10 @@ namespace esphomecsharp.Screen
 
                 x.LastActivity.Restart();
             }
+            //else
+            //{
+            //    Debug.Print (json.Id);
+            //}
         }
 
         public static async Task PrintStateAsync(EState state, int row)
@@ -60,7 +67,7 @@ namespace esphomecsharp.Screen
 
             if (state == EState.Running)
             {
-                ConsoleOperation.AddQueue(() =>
+                ConsoleOperation.AddQueue(EConsoleScreen.Dashboard, () =>
                 {
                     Console.ForegroundColor = ConsoleColor.Black;
                     Console.SetCursorPosition(GlobalVariable.CONSOLE_LEFT_POS + -4, row);
@@ -69,7 +76,7 @@ namespace esphomecsharp.Screen
             }
             else if (state == EState.Stopped)
             {
-                ConsoleOperation.AddQueue(() =>
+                ConsoleOperation.AddQueue(EConsoleScreen.Dashboard, () =>
                 {
                     Console.ForegroundColor = ConsoleColor.Red;
                     Console.SetCursorPosition(GlobalVariable.CONSOLE_LEFT_POS + -4, row);
@@ -78,7 +85,7 @@ namespace esphomecsharp.Screen
             }
             else
             {
-                ConsoleOperation.AddQueue(() =>
+                ConsoleOperation.AddQueue(EConsoleScreen.Dashboard, () =>
                 {
                     Console.ForegroundColor = ConsoleColor.Red;
                     Console.SetCursorPosition(GlobalVariable.CONSOLE_LEFT_POS + -4, row);

@@ -105,7 +105,7 @@ sensor:
     name: ${friendly_devicename} ESP32 Internal Temp
     device_class: temperature
     unit_of_measurement: °C
-    id: esp32_temp
+    id: "${devicename_no_dashes}_temperature"
     lambda: return temperatureRead();
 
 binary_sensor:

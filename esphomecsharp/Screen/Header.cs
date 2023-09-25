@@ -15,7 +15,7 @@ namespace esphomecsharp.Screen
         {
             if (GlobalVariable.PrintError.Elapsed.TotalSeconds > GlobalVariable.Settings.ShowErrorInterval)
             {
-                ConsoleOperation.AddQueue(async () =>
+                ConsoleOperation.AddQueue(EConsoleScreen.Header, async () =>
                 {
                     var count = await EspHomeContext.GetErrorCountAsync();
 
@@ -41,7 +41,7 @@ namespace esphomecsharp.Screen
         {
             if (GlobalVariable.PrintTime.ElapsedMilliseconds > 1000)
             {
-                ConsoleOperation.AddQueue(() =>
+                ConsoleOperation.AddQueue(EConsoleScreen.Header, () =>
                 {
                     Console.ForegroundColor = ConsoleColor.White;
                     Console.SetCursorPosition(GlobalVariable.CONSOLE_LEFT_POS, 1);
@@ -63,7 +63,7 @@ namespace esphomecsharp.Screen
                     GlobalVariable.TotalDailyEnergy[json.Id] = json.Data;
                     var total = GlobalVariable.TotalDailyEnergy.Sum(x => x.Value);
 
-                    ConsoleOperation.AddQueue(() =>
+                    ConsoleOperation.AddQueue(EConsoleScreen.Header, () =>
                     {
                         Console.ForegroundColor = ConsoleColor.White;
                         Console.SetCursorPosition(GlobalVariable.CONSOLE_LEFT_POS, 2);
@@ -89,7 +89,7 @@ namespace esphomecsharp.Screen
                     GlobalVariable.TotalPower[json.Id] = json.Data;
                     var total = GlobalVariable.TotalPower.Sum(x => x.Value);
 
-                    ConsoleOperation.AddQueue(() =>
+                    ConsoleOperation.AddQueue(EConsoleScreen.Header, () =>
                     {
                         Console.ForegroundColor = ConsoleColor.White;
                         Console.SetCursorPosition(GlobalVariable.CONSOLE_LEFT_POS, 3);
@@ -109,7 +109,7 @@ namespace esphomecsharp.Screen
 
         public static async Task PrintHelp()
         {
-            ConsoleOperation.AddQueue(() =>
+            ConsoleOperation.AddQueue(EConsoleScreen.Header, () =>
             {
                 Console.ForegroundColor = ConsoleColor.White;
                 Console.SetCursorPosition(GlobalVariable.CONSOLE_LEFT_POS + GlobalVariable.CONSOLE_RIGHT_PAD + 1, 1);

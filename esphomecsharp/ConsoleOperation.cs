@@ -10,7 +10,7 @@ namespace esphomecsharp
 {
     public static class ConsoleOperation
     {
-        private static readonly BlockingCollection<Action> Queue = new();
+        private static readonly BlockingCollection<ConsoleAction> Queue = new();
 
         public static async Task RunAndProcessAsync()
         {
@@ -22,7 +22,11 @@ namespace esphomecsharp
                     {
                         foreach (var item in Queue.GetConsumingEnumerable())
                         {
-                            item.Invoke();
+                            item.PreAction?.Invoke();
+
+                            item.Action?.Invoke();
+
+                            item.PostAction?.Invoke();
                         }
                     });
                 }
@@ -39,10 +43,18 @@ namespace esphomecsharp
         {
             Queue.CompleteAdding();
         }
-
-        public static void AddQueue(Action item)
+        public static void AddQueue(EConsoleScreen screen, Action action)
         {
-            Queue.Add(item);
+            Queue.Add(new() { Screen = screen, PreAction = null, Action = action, PostAction = null });
+        }
+        public static void AddQueue(EConsoleScreen screen, Action preAction, Action action)
+        {
+            Queue.Add(new() { Screen = screen, PreAction = preAction, Action = action, PostAction = null });
+        }
+
+        public static void AddQueue(EConsoleScreen screen, Action preAction, Action action, Action postAction)
+        {
+            Queue.Add(new() { Screen = screen, PreAction = preAction, Action = action, PostAction = postAction });
         }
 
         public static async Task<bool> ReadKeyAsync()
@@ -82,7 +94,7 @@ namespace esphomecsharp
         {
             if (input.KeyChar == 'c')
             {
-                Queue.Add(() =>
+                AddQueue(EConsoleScreen.Header, () =>
                 {
                     Console.SetCursorPosition(0, 0);
                     Console.WriteLine("".PadRight(Console.WindowWidth * 4));
