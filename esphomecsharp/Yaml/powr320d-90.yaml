@@ -1,4 +1,4 @@
-﻿substitutions:
+substitutions:
   devicename: powr320d-90
   friendly_devicename: powr320d-90
   devicename_no_dashes: powr320d_90
@@ -20,7 +20,7 @@ wifi:
     ssid: "${friendly_devicename} fallback"
     password: !secret wifi_password
 
-logger:
+#logger:
 
 ota:
 
@@ -28,11 +28,6 @@ web_server:
   port: 80
   local: true
   include_internal: true
-
-uart:
-  rx_pin: GPIO16
-  baud_rate: 4800
-  parity: even
 
 time:
   - platform: sntp
@@ -42,12 +37,20 @@ time:
     servers:
       - 10.0.0.1
 
+uart:
+  rx_pin: GPIO16
+  baud_rate: 4800
+  parity: even
+
 sensor:
   - platform: wifi_signal
     name: "${friendly_devicename}: WiFi Signal"
     id: "${devicename_no_dashes}_signal"
     update_interval: 60s
+
   - platform: cse7766
+    update_interval: 3s
+
     current:
       name: "${friendly_devicename}: Current"
       id: "${devicename_no_dashes}_current"
@@ -59,6 +62,7 @@ sensor:
         - or:
           - throttle: 60s
           - delta: 0.5
+
     voltage:
       name: "${friendly_devicename}: Voltage"
       id: "${devicename_no_dashes}_voltage"
@@ -70,6 +74,7 @@ sensor:
         - or:
           - throttle: 60s
           - delta: 0.5
+
     power:
       name: "${friendly_devicename}: Power"
       id: "${devicename_no_dashes}_power"
@@ -81,7 +86,7 @@ sensor:
         - or:
           - throttle: 60s
           - delta: 50
-    update_interval: 1s
+          
   - platform: total_daily_energy
     name: "${friendly_devicename}: Daily Energy"
     id: "${devicename_no_dashes}_power_daily"
@@ -95,6 +100,7 @@ sensor:
     # 3 shows each W consumed, 2 every 10W, 1 every 100W
     accuracy_decimals: 2
     restore: false
+
   - platform: template
     name: ${friendly_devicename} ESP32 Internal Temp
     device_class: temperature
@@ -105,13 +111,14 @@ sensor:
 binary_sensor:
   - platform: gpio
     pin: GPIO00
-    id: reset
+    id: display_state
     internal: true
     filters:
       - invert:
       - delayed_off: 10ms
     on_click:
       lambda: id(page).publish_state(!id(page).state);
+
   - platform: template # this is a fake sensor to tell the screen which info to show on display
     id: page
     publish_initial_state: true
@@ -148,6 +155,7 @@ switch:
       - switch.turn_on: relay_off
     turn_on_action:
       - switch.turn_on: relay_on
+
   - platform: gpio
     restore_mode: ALWAYS_ON
     internal: true
@@ -157,6 +165,7 @@ switch:
       - delay: 500ms
       - switch.turn_off: relay_off # bi-stable relay so no need to keep on
     interlock: [relay_on]
+
   - platform: gpio
     restore_mode: ALWAYS_ON
     internal: true
@@ -169,18 +178,23 @@ switch:
 
 text_sensor:
   - platform: wifi_info
+  
     ip_address:
       name: "${friendly_devicename}: IP"
       icon: "mdi:ip-outline"
+
     ssid:
       name: "${friendly_devicename}: SSID"
       icon: "mdi:wifi-settings"
+
     bssid:
       name: "${friendly_devicename}: BSSID"
       icon: "mdi:wifi-settings"
+
     mac_address:
       name: "${friendly_devicename}: MAC"
       icon: "mdi:network-outline"
+
   - platform: version
     name: "ESPHome Version"
     hide_timestamp: true
