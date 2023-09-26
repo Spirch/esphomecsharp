@@ -39,7 +39,7 @@ sensor:
     update_interval: 60s
     
   - platform: cse7766
-    update_interval: 3s
+    update_interval: 1s
     
     current:
       name: "${friendly_devicename}: Current"

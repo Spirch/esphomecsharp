@@ -49,7 +49,7 @@ sensor:
     update_interval: 60s
 
   - platform: cse7766
-    update_interval: 3s
+    update_interval: 1s
 
     current:
       name: "${friendly_devicename}: Current"
@@ -99,18 +99,6 @@ sensor:
     device_class: energy
     # 3 shows each W consumed, 2 every 10W, 1 every 100W
     accuracy_decimals: 2
-    restore: false
-
-#  - platform: internal_temperature
-#    name: "${friendly_devicename}: ESP32 Internal Temp"
-#    id: "${devicename_no_dashes}_temperature"
-
-#  - platform: template
-#    name: ${friendly_devicename} ESP32 Internal Temp lambda
-#    device_class: temperature
-#    unit_of_measurement: °C
-#    id: "${devicename_no_dashes}_temperature"
-#    lambda: return temperatureRead();
 
 binary_sensor:
   - platform: gpio
