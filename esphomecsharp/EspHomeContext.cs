@@ -65,7 +65,7 @@ namespace esphomecsharp
 
                 await test.Database.ExecuteSqlRawAsync("CREATE VIEW MinMaxValue as  \r\nSELECT row.Name \r\n        , row.FriendlyName \r\n        , data.MaxValue   \r\n        , data.MinValue   \r\n        , row.Unit   \r\n   FROM [RowEntry] row   \r\n   inner join    \r\n   (   \r\n    SELECT [RowEntryId]   \r\n        ,max([Data]) MaxValue   \r\n        ,min([Data]) MinValue   \r\n    FROM [Event]   \r\n    group by RowEntryId   \r\n   ) data on data.[RowEntryId] = row.[RowEntryId]   \r\n order by row.Unit, row.FriendlyName");
 
-                await test.Database.ExecuteSqlRawAsync("CREATE VIEW ShowAll as  \r\n  SELECT datetime(data.UnixTime, 'unixepoch', 'localtime') DateTime \r\n       , data.UnixTime  \r\n       , row.Name   \r\n       , row.FriendlyName   \r\n       , data.Data   \r\n       , row.Unit   \r\n  FROM [RowEntry] row   \r\n  inner join [Event] data on data.[RowEntryId] = row.[RowEntryId]");
+                await test.Database.ExecuteSqlRawAsync("CREATE VIEW ShowAll as  \r\n  SELECT datetime(data.UnixTime, 'unixepoch', 'localtime') DateTime \r\n       , data.UnixTime  \r\n       , row.Name   \r\n       , row.FriendlyName   \r\n       , data.Data   \r\n       , row.Unit   \r\n  FROM [RowEntry] row   \r\n  inner join [Event] data on data.[RowEntryId] = row.[RowEntryId]   \r\n  order by row.FriendlyName, row.Name, data.UnixTime ");
 
                 await test.Database.CloseConnectionAsync();
             }

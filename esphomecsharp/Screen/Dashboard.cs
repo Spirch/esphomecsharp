@@ -43,16 +43,28 @@ namespace esphomecsharp.Screen
             {
                 ConsoleOperation.AddQueue(EConsoleScreen.Dashboard, () =>
                 {
-                    row.LastValue = json.State.PadCenter(row.Padding);
+                    row.LastPrint = json.State.PadCenter(row.Padding);
                 },
                 () =>
                 {
                     Console.ForegroundColor = x.Color;
                     Console.SetCursorPosition(GlobalVariable.CONSOLE_LEFT_POS + row.Col, row.Server.Row);
-                    Console.Write(row.LastValue);
+                    Console.Write(row.LastPrint);
+                },
+                async () =>
+                {
+                    if(Math.Abs(json.Data - row.LastValue) >= row.RecordDelta || row.LastRecord >= row.RecordThrottle)
+                    {
+                        row.LastValue = json.Data;
+                        row.LastRecord = 0;
+                        await EspHomeContext.InsertRowAsync(json, row);
+                    }
+                    else
+                    {
+                        row.RecordThrottle++;
+                    }
                 });
 
-                await EspHomeContext.InsertRowAsync(json, row);
 
                 x.LastActivity.Restart();
             }

@@ -22,6 +22,8 @@ namespace esphomecsharp
             public string Unit { get; set; }
             public bool IsTotalDailyEnergy { get; set; }
             public bool IsTotalPower { get; set; }
+            public decimal RecordDelta { get; set; }
+            public int RecordThrottle { get; set; }
         }
 
         public const string RES_TOTAL_DAILY_ENERGY = "Total Daily Energy:";
@@ -166,6 +168,9 @@ namespace esphomecsharp
                            Unit = r.Unit,
 
                            Col = r.Column * rowPadding,
+
+                           RecordDelta = r.RecordDelta,
+                           RecordThrottle = r.RecordThrottle,
                        }
                    };
 
