@@ -84,7 +84,7 @@ namespace esphomecsharp
             try
             {
                 //to make sure all events doesnt arrive at the same time
-                await Task.Delay(Random.Shared.Next(0, 5000));
+                await Task.Delay(Random.Shared.Next(0, 3000));
 
                 PingReply pingReply = await PingAsync(server.Uri.Host);
 
