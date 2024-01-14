@@ -72,6 +72,8 @@ namespace esphomecsharp.Screen
             //{
             //    Debug.Print(json.Id);
             //}
+
+            await Task.CompletedTask;
         }
 
         public static async Task PrintStateAsync(EState state, int row)
