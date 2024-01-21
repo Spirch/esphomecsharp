@@ -1,6 +1,5 @@
-﻿namespace esphomecsharp.EF.Model
+﻿namespace esphomecsharp.EF.Model;
+
+public interface IDbItem
 {
-    public interface IDbItem
-    {
-    }
 }

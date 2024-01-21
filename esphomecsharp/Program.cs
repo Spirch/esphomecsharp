@@ -16,7 +16,7 @@ await EspHomeOperation.FetchDeviceDataAsync();
 var con = ConsoleOperation.RunAndProcessAsync();
 var db = EspHomeContext.RunAndProcessAsync();
 
-while (await ConsoleOperation.ReadKeyAsync());
+while (await ConsoleOperation.ReadKeyAsync()) ;
 
 EspHomeOperation.Running = false;
 

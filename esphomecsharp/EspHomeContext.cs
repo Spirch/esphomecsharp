@@ -8,131 +8,130 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace esphomecsharp
+namespace esphomecsharp;
+
+public static class EspHomeContext
 {
-    public static class EspHomeContext
+    private static readonly BlockingCollection<(IDbItem dbItem, RowInfo rowInfo)> Queue = new();
+    public static async Task RunAndProcessAsync()
     {
-        private static readonly BlockingCollection<(IDbItem dbItem, RowInfo rowInfo)> Queue = new();
-        public static async Task RunAndProcessAsync()
+        while (!Queue.IsCompleted)
         {
-            while(!Queue.IsCompleted)
+            try
             {
-                try
+                await Task.Run(async () =>
                 {
-                    await Task.Run(async () =>
+                    using var EspHomeDb = new Context();
+
+                    foreach (var (dbItem, rowInfo) in Queue.GetConsumingEnumerable())
                     {
-                        using var EspHomeDb = new Context();
-
-                        foreach (var (dbItem, rowInfo) in Queue.GetConsumingEnumerable())
+                        if (rowInfo != null && dbItem is Event json)
                         {
-                            if (rowInfo != null && dbItem is Event json)
-                            {
-                                await GetDescIdAsync(EspHomeDb, json, rowInfo);
-                            }
-
-                            await EspHomeDb.AddAsync(dbItem);
-                            await EspHomeDb.SaveChangesAsync();
-                            EspHomeDb.ChangeTracker.Clear();
+                            await GetDescIdAsync(EspHomeDb, json, rowInfo);
                         }
-                    });
-                }
-                catch (Exception e)
-                {
-                    await e.HandleErrorAsync("EspHomeContext.RunAndProcess");
 
-                    await Task.Delay(5000);
-                }
+                        await EspHomeDb.AddAsync(dbItem);
+                        await EspHomeDb.SaveChangesAsync();
+                        EspHomeDb.ChangeTracker.Clear();
+                    }
+                });
             }
-        }
-
-        public static void StopQueue()
-        {
-            Queue.CompleteAdding();
-        }
-
-        public static async Task CreateDBIfNotExistAsync()
-        {
-            if (!File.Exists(GlobalVariable.Settings.DBFileName))
+            catch (Exception e)
             {
-                using var test = new Context();
+                await e.HandleErrorAsync("EspHomeContext.RunAndProcess");
 
-                test.Database.EnsureDeleted();
-                test.Database.EnsureCreated();
-
-                await test.Database.OpenConnectionAsync();
-
-                await test.Database.ExecuteSqlRawAsync("PRAGMA journal_mode=DELETE");
-
-                await test.Database.ExecuteSqlRawAsync("CREATE VIEW MinMaxValue as  \r\nSELECT  row.Name \r\n      , row.FriendlyName \r\n      , data.MaxValue \r\n      , data.MinValue \r\n      , row.Unit \r\nFROM [RowEntry] row \r\nINNER join \r\n( \r\n    SELECT  [RowEntryId] \r\n          , max([Data]) MaxValue\r\n          , min([Data]) MinValue\r\n    FROM [Event] \r\n    GROUP BY RowEntryId \r\n) data ON data.[RowEntryId] = row.[RowEntryId] \r\nORDER BY row.Unit, row.FriendlyName");
-
-                await test.Database.ExecuteSqlRawAsync("CREATE VIEW ShowAll as  \r\nSELECT    datetime(data.UnixTime, 'unixepoch', 'localtime') DateTime \r\n         , date(data.UnixTime, 'unixepoch', 'localtime') Date \r\n         , time(data.UnixTime, 'unixepoch', 'localtime') Time \r\n         , data.UnixTime \r\n         , row.Name \r\n         , row.FriendlyName \r\n         , data.Data \r\n         , row.Unit \r\nFROM [RowEntry] row \r\nINNER join [Event] data ON data.[RowEntryId] = row.[RowEntryId] \r\nORDER BY row.FriendlyName, row.Name, data.UnixTime");
-
-                await test.Database.CloseConnectionAsync();
+                await Task.Delay(5000);
             }
         }
+    }
 
-        public static async Task GetDescIdAsync(Context EspHomeDb, Event json, RowInfo row)
+    public static void StopQueue()
+    {
+        Queue.CompleteAdding();
+    }
+
+    public static async Task CreateDBIfNotExistAsync()
+    {
+        if (!File.Exists(GlobalVariable.Settings.DBFileName))
         {
+            using var test = new Context();
+
+            test.Database.EnsureDeleted();
+            test.Database.EnsureCreated();
+
+            await test.Database.OpenConnectionAsync();
+
+            await test.Database.ExecuteSqlRawAsync("PRAGMA journal_mode=DELETE");
+
+            await test.Database.ExecuteSqlRawAsync("CREATE VIEW MinMaxValue as  \r\nSELECT  row.Name \r\n      , row.FriendlyName \r\n      , data.MaxValue \r\n      , data.MinValue \r\n      , row.Unit \r\nFROM [RowEntry] row \r\nINNER join \r\n( \r\n    SELECT  [RowEntryId] \r\n          , max([Data]) MaxValue\r\n          , min([Data]) MinValue\r\n    FROM [Event] \r\n    GROUP BY RowEntryId \r\n) data ON data.[RowEntryId] = row.[RowEntryId] \r\nORDER BY row.Unit, row.FriendlyName");
+
+            await test.Database.ExecuteSqlRawAsync("CREATE VIEW ShowAll as  \r\nSELECT    datetime(data.UnixTime, 'unixepoch', 'localtime') DateTime \r\n         , date(data.UnixTime, 'unixepoch', 'localtime') Date \r\n         , time(data.UnixTime, 'unixepoch', 'localtime') Time \r\n         , data.UnixTime \r\n         , row.Name \r\n         , row.FriendlyName \r\n         , data.Data \r\n         , row.Unit \r\nFROM [RowEntry] row \r\nINNER join [Event] data ON data.[RowEntryId] = row.[RowEntryId] \r\nORDER BY row.FriendlyName, row.Name, data.UnixTime");
+
+            await test.Database.CloseConnectionAsync();
+        }
+    }
+
+    public static async Task GetDescIdAsync(Context EspHomeDb, Event json, RowInfo row)
+    {
+        if (row.DbDescId == null)
+        {
+            row.DbDescId = await EspHomeDb.RowEntry
+                                        .Where(x => x.Name == json.Id &&
+                                                    x.FriendlyName == row.Server.FriendlyName)
+                                        .Select(x => x.RowEntryId)
+                                        .FirstOrDefaultAsync();
+
             if (row.DbDescId == null)
             {
-                row.DbDescId = await EspHomeDb.RowEntry
-                                            .Where(x => x.Name == json.Id &&
-                                                        x.FriendlyName == row.Server.FriendlyName)
-                                            .Select(x => x.RowEntryId)
-                                            .FirstOrDefaultAsync();
-
-                if (row.DbDescId == null)
+                var newId = new RowEntry()
                 {
-                    var newId = new RowEntry()
-                    {
-                        FriendlyName = row.Server.FriendlyName,
-                        Name = json.Id,
-                        Unit = row.Unit,
-                    };
+                    FriendlyName = row.Server.FriendlyName,
+                    Name = json.Id,
+                    Unit = row.Unit,
+                };
 
-                    await EspHomeDb.AddAsync(newId);
-                    await EspHomeDb.SaveChangesAsync();
+                await EspHomeDb.AddAsync(newId);
+                await EspHomeDb.SaveChangesAsync();
 
-                    row.DbDescId = newId.RowEntryId;
-                }
+                row.DbDescId = newId.RowEntryId;
             }
-
-            json.RowEntryId = row.DbDescId.Value;
         }
 
-        public static async Task InsertErrorAsync(Error error)
+        json.RowEntryId = row.DbDescId.Value;
+    }
+
+    public static async Task InsertErrorAsync(Error error)
+    {
+        Queue.Add((error, null));
+
+        await Task.CompletedTask;
+    }
+
+    public static async Task InsertRowAsync(Event json, RowInfo row)
+    {
+        Queue.Add((json, row));
+
+        await Task.CompletedTask;
+    }
+
+    public static async Task InsertTotalAsync(string type, RowInfo row, decimal total)
+    {
+        var newJson = new Event()
         {
-            Queue.Add((error, null));
+            Id = $"{row.Name}{GlobalVariable.RES_TOTAL}_{type}",
+            Value = total,
+            UnixTime = DateTimeOffset.Now.ToUnixTimeSeconds(),
+        };
 
-            await Task.CompletedTask;
-        }
+        Queue.Add((newJson, row));
 
-        public static async Task InsertRowAsync(Event json, RowInfo row)
-        {
-            Queue.Add((json, row));
+        await Task.CompletedTask;
+    }
 
-            await Task.CompletedTask;
-        }
+    public static async Task<int> GetErrorCountAsync()
+    {
+        using var EspHomeDb = new Context();
 
-        public static async Task InsertTotalAsync(string type, RowInfo row, decimal total)
-        {
-            var newJson = new Event()
-            {
-                Id = $"{row.Name}{GlobalVariable.RES_TOTAL}_{type}",
-                Value = total,
-                UnixTime = DateTimeOffset.Now.ToUnixTimeSeconds(),
-            };
-
-            Queue.Add((newJson, row));
-
-            await Task.CompletedTask;
-        }
-
-        public static async Task<int> GetErrorCountAsync()
-        {
-            using var EspHomeDb = new Context();
-
-            return await EspHomeDb.Error.CountAsync(x => !x.IsHandled);
-        }
+        return await EspHomeDb.Error.CountAsync(x => !x.IsHandled);
     }
 }

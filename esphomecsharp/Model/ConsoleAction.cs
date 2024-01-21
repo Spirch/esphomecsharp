@@ -1,16 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
-namespace esphomecsharp.Model
+namespace esphomecsharp.Model;
+
+public sealed class ConsoleAction
 {
-    public sealed class ConsoleAction
-    {
-        public EConsoleScreen Screen { get; set; }
-        public Action PreAction { get; set; }
-        public Action Action { get; set; }
-        public Action PostAction { get; set; }
-    }
+    public EConsoleScreen Screen { get; set; }
+    public Func<Task> PreAction { get; set; }
+    public Func<Task> Action { get; set; }
+    public Func<Task> PostAction { get; set; }
+
+    public static readonly Func<Task> NoOp = async () => { await Task.CompletedTask; };
 }

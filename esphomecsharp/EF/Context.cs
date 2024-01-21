@@ -1,81 +1,80 @@
 ﻿using esphomecsharp.EF.Model;
 using Microsoft.EntityFrameworkCore;
 
-namespace esphomecsharp.EF
+namespace esphomecsharp.EF;
+
+public sealed class Context : DbContext
 {
-    public sealed class Context : DbContext
+    public DbSet<Error> Error { get; set; }
+    public DbSet<Event> Event { get; set; }
+    public DbSet<RowEntry> RowEntry { get; set; }
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        public DbSet<Error> Error { get; set; }
-        public DbSet<Event> Event { get; set; }
-        public DbSet<RowEntry> RowEntry { get; set; }
+        optionsBuilder.UseSqlite($"DataSource={GlobalVariable.Settings.DBFileName};");
+    }
 
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Event>(x =>
         {
-            optionsBuilder.UseSqlite($"DataSource={GlobalVariable.Settings.DBFileName};");
-        }
+            x.HasKey(p => p.EventId);
 
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
+            x.Property(p => p.EventId)
+             .IsRequired()
+             .ValueGeneratedOnAdd();
+
+            x.Property(p => p.Data)
+                .IsRequired()
+                .HasColumnType("real");
+
+            x.Property(p => p.RowEntryId)
+             .IsRequired();
+
+            x.Property(p => p.UnixTime)
+             .IsRequired();
+
+            x.Ignore(p => p.Id);
+            x.Ignore(p => p.Name);
+            x.Ignore(p => p.Value);
+            x.Ignore(p => p.State);
+
+            x.HasOne(d => d.EspHomeId)
+             .WithMany(dm => dm.Event)
+             .HasForeignKey(dkey => dkey.RowEntryId);
+        });
+
+        modelBuilder.Entity<RowEntry>(x =>
         {
-            modelBuilder.Entity<Event>(x =>
-            {
-                x.HasKey(p => p.EventId);
+            x.HasKey(p => p.RowEntryId);
 
-                x.Property(p => p.EventId)
-                 .IsRequired()
-                 .ValueGeneratedOnAdd();
+            x.Property(p => p.RowEntryId)
+             .IsRequired()
+             .ValueGeneratedOnAdd();
 
-                x.Property(p => p.Data)
-                    .IsRequired()
-                    .HasColumnType("real");
+            x.Property(p => p.Name)
+             .IsRequired();
 
-                x.Property(p => p.RowEntryId)
-                 .IsRequired();
+            x.HasIndex(p => p.Name)
+             .IsUnique();
+        });
 
-                x.Property(p => p.UnixTime)
-                 .IsRequired();
+        modelBuilder.Entity<Error>(x =>
+        {
+            x.HasKey(p => p.ErrorId);
 
-                x.Ignore(p => p.Id);
-                x.Ignore(p => p.Name);
-                x.Ignore(p => p.Value);
-                x.Ignore(p => p.State);
+            x.Property(p => p.ErrorId)
+             .IsRequired()
+             .ValueGeneratedOnAdd();
 
-                x.HasOne(d => d.EspHomeId)
-                 .WithMany(dm => dm.Event)
-                 .HasForeignKey(dkey => dkey.RowEntryId);
-            });
+            x.Property(p => p.Message)
+             .IsRequired();
 
-            modelBuilder.Entity<RowEntry>(x =>
-            {
-                x.HasKey(p => p.RowEntryId);
+            x.Property(p => p.Date)
+             .IsRequired();
 
-                x.Property(p => p.RowEntryId)
-                 .IsRequired()
-                 .ValueGeneratedOnAdd();
-
-                x.Property(p => p.Name)
-                 .IsRequired();
-
-                x.HasIndex(p => p.Name)
-                 .IsUnique();
-            });
-
-            modelBuilder.Entity<Error>(x =>
-            {
-                x.HasKey(p => p.ErrorId);
-
-                x.Property(p => p.ErrorId)
-                 .IsRequired()
-                 .ValueGeneratedOnAdd();
-
-                x.Property(p => p.Message)
-                 .IsRequired();
-
-                x.Property(p => p.Date)
-                 .IsRequired();
-
-                x.Property(p => p.IsHandled)
-                 .IsRequired();
-            });
-        }
+            x.Property(p => p.IsHandled)
+             .IsRequired();
+        });
     }
 }
