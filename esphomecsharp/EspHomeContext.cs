@@ -61,7 +61,8 @@ public static class EspHomeContext
 
             await test.Database.OpenConnectionAsync();
 
-            await test.Database.ExecuteSqlRawAsync("PRAGMA journal_mode=DELETE");
+            //WAL is needed since read and write at the same time can cause lock database exception
+            await test.Database.ExecuteSqlRawAsync("PRAGMA journal_mode=WAL");
 
             await test.Database.ExecuteSqlRawAsync("CREATE VIEW MinMaxValue as  \r\nSELECT  row.Name \r\n      , row.FriendlyName \r\n      , data.MaxValue \r\n      , data.MinValue \r\n      , row.Unit \r\nFROM [RowEntry] row \r\nINNER join \r\n( \r\n    SELECT  [RowEntryId] \r\n          , max([Data]) MaxValue\r\n          , min([Data]) MinValue\r\n    FROM [Event] \r\n    GROUP BY RowEntryId \r\n) data ON data.[RowEntryId] = row.[RowEntryId] \r\nORDER BY row.Unit, row.FriendlyName");
 
