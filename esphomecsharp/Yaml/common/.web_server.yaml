@@ -1,0 +1,4 @@
+web_server:
+  port: 80
+  local: true
+  include_internal: true

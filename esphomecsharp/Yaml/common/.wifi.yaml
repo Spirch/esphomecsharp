@@ -1,0 +1,8 @@
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  domain: .lan
+
+  ap:
+    ssid: "${devicename} fallback"
+    password: !secret wifi_password

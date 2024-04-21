@@ -1,0 +1,23 @@
+text_sensor:
+  - platform: wifi_info
+  
+    ip_address:
+      name: "${devicename} IP"
+      id: "${devicename_no_dashes}_ip_address"
+      
+    ssid:
+      name: "${devicename} SSID"
+      id: "${devicename_no_dashes}_ssid"
+      
+    bssid:
+      name: "${devicename} BSSID"
+      id: "${devicename_no_dashes}_bssid"
+      
+    mac_address:
+      name: "${devicename} MAC"
+      id: "${devicename_no_dashes}_mac_address"
+      
+  - platform: version
+    name: "${devicename} ESPHome Version"
+    id: "${devicename_no_dashes}_esphome_version"
+    hide_timestamp: true

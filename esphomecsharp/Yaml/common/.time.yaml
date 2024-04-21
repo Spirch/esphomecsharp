@@ -1,0 +1,7 @@
+time:
+  - platform: sntp
+    id: "${devicename_no_dashes}_sntp_time_home"
+    timezone: EST5EDT,M3.2.0,M11.1.0
+    update_interval: 15min
+    servers:
+      - 10.0.0.1

@@ -1,0 +1,90 @@
+esphome:
+  name: ${devicename}
+
+esp32:
+  board: nodemcu-32s
+  
+preferences:
+  flash_write_interval: 10min
+
+#logger:
+
+uart:
+  rx_pin: GPIO16
+  baud_rate: 4800
+  parity: even
+
+binary_sensor:
+  - platform: gpio
+    pin: GPIO00
+    id: display_state
+    internal: true
+    filters:
+      - invert:
+      - delayed_off: 10ms
+    on_click:
+      lambda: id(page).publish_state(!id(page).state);
+
+  - platform: template # this is a fake sensor to tell the screen which info to show on display
+    id: page
+    publish_initial_state: true
+    internal: true
+
+display:
+  platform: tm1621
+  id: tm1621_display
+  cs_pin: GPIO25
+  data_pin: GPIO14
+  read_pin: GPIO26
+  write_pin: GPIO27
+  lambda: |-
+    if (id(page).state) {
+      it.display_voltage(true);
+      it.display_kwh(false);
+      it.printf(0, "%.1f", id(${devicename_no_dashes}_voltage).state);
+      it.printf(1, "%.1f", id(${devicename_no_dashes}_current).state);
+    } else {  
+      it.display_voltage(false);
+      it.display_kwh(true);
+      it.printf(0, "%.1f", id(${devicename_no_dashes}_daily_energy).state);
+      it.printf(1, "%.1f", id(${devicename_no_dashes}_power).state);
+    }
+
+switch:
+  - platform: template
+    name: "${devicename}"
+    icon: "mdi:power-socket-us"
+    optimistic: true
+    id: relay_1
+    restore_mode: ALWAYS_ON
+    turn_off_action:
+      - switch.turn_on: relay_off
+    turn_on_action:
+      - switch.turn_on: relay_on
+
+  - platform: gpio
+    restore_mode: ALWAYS_ON
+    internal: true
+    id: relay_off
+    pin: GPIO04
+    on_turn_on:
+      - delay: 500ms
+      - switch.turn_off: relay_off # bi-stable relay so no need to keep on
+    interlock: [relay_on]
+
+  - platform: gpio
+    restore_mode: ALWAYS_ON
+    internal: true
+    id: relay_on
+    pin: GPIO02
+    on_turn_on:
+      - delay: 500ms
+      - switch.turn_off: relay_on  # bi-stable relay so no need to keep on
+    interlock: [relay_off]
+    
+<<: !include .ota.yaml
+<<: !include .sensor.yaml
+<<: !include .text_sensor.yaml
+<<: !include .time.yaml
+<<: !include .web_server.yaml
+<<: !include .wifi.yaml

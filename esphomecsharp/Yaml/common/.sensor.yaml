@@ -1,0 +1,86 @@
+sensor:
+  - platform: wifi_signal
+    name: "${devicename} WiFi Signal"
+    id: "${devicename_no_dashes}_wifi_signal"
+    update_interval: 60s
+    
+  - platform: cse7766
+    
+    current:
+      name: "${devicename} Current"
+      id: "${devicename_no_dashes}_current"
+      unit_of_measurement: A
+      accuracy_decimals: 2
+      filters:
+        - filter_out: nan
+        - throttle_average: 1s
+        - or:
+          - throttle: 60s
+          - delta: 0.5
+          
+    voltage:
+      name: "${devicename} Voltage"
+      id: "${devicename_no_dashes}_voltage"
+      unit_of_measurement: V
+      accuracy_decimals: 2
+      filters:
+        - filter_out: nan
+        - throttle_average: 1s
+        - or:
+          - throttle: 60s
+          - delta: 0.5
+          
+    power:
+      name: "${devicename} Power"
+      id: "${devicename_no_dashes}_power"
+      unit_of_measurement: W
+      accuracy_decimals: 2
+      filters:
+        - filter_out: nan
+        - throttle_average: 1s
+        - or:
+          - throttle: 60s
+          - delta: 50
+
+    energy:
+      name: "${devicename} Total Power"
+      id: "${devicename_no_dashes}_total_power"
+      unit_of_measurement: kWh
+      accuracy_decimals: 2
+      filters:
+        - filter_out: nan
+        - throttle_average: 60s
+        - multiply: 0.001
+          
+    apparent_power:
+      name: "${devicename} Apparent Power"
+      id: "${devicename_no_dashes}_apparent_power"
+      unit_of_measurement: VA
+      accuracy_decimals: 2
+      filters:
+        - filter_out: nan
+        - throttle_average: 1s
+        - or:
+          - throttle: 60s
+          - delta: 1
+          
+    power_factor:
+      name: "${devicename} Power Factor"
+      id: "${devicename_no_dashes}_power_factor"
+      accuracy_decimals: 2
+      filters:
+        - filter_out: nan
+        - throttle_average: 1s
+        - or:
+          - throttle: 60s
+          - delta: 0.05
+          
+  - platform: total_daily_energy
+    name: "${devicename} Daily Energy"
+    id: "${devicename_no_dashes}_daily_energy"
+    power_id: "${devicename_no_dashes}_power"
+    filters:
+      - filter_out: nan
+      - multiply: 0.001
+    unit_of_measurement: kW
+    accuracy_decimals: 2

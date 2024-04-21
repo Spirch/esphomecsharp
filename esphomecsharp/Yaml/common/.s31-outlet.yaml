@@ -1,0 +1,41 @@
+esphome:
+  name: ${devicename}
+
+esp8266:
+  board: esp01_1m
+  restore_from_flash: true
+  
+preferences:
+  flash_write_interval: 10min
+
+#logger:
+#  baud_rate: 0 # (UART logging interferes with cse7766)  
+
+uart:
+  rx_pin: RX
+  baud_rate: 4800
+
+binary_sensor:
+  - platform: status
+    name: "${devicename} Status"
+    id: "${devicename_no_dashes}_status"
+
+switch:
+  - platform: gpio
+    name: "${devicename}"
+    pin: GPIO12
+    id: relay
+    internal: true
+    restore_mode: ALWAYS_ON
+
+status_led:
+  pin:
+    number: GPIO13
+    inverted: True
+
+<<: !include .ota.yaml
+<<: !include .sensor.yaml
+<<: !include .text_sensor.yaml
+<<: !include .time.yaml
+<<: !include .web_server.yaml
+<<: !include .wifi.yaml

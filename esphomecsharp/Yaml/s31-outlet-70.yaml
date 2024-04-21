@@ -1,7 +1,5 @@
 substitutions:
   devicename: s31-outlet-70
-  friendly_devicename: s31-outlet-70
   devicename_no_dashes: s31_outlet_70
 
-
-<<: !include .s31-outlet.yaml
+<<: !include common/.s31-outlet.yaml

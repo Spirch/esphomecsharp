@@ -135,19 +135,25 @@ public static class EspHomeOperation
 
     private static async Task HandleEventAsync(string data, Server server)
     {
-        var json = JsonSerializer.Deserialize<Event>(data.AsSpan(GlobalVariable.DATA_START), GlobalVariable.JsonOptions);
+        //basic check to see if the line could be json
+        if(data?.Length > GlobalVariable.DATA_START && data[GlobalVariable.DATA_START] == '{')
+        {
+            //Debug.Print(data);
 
-        json.UnixTime = DateTimeOffset.Now.ToUnixTimeSeconds();
+            var json = JsonSerializer.Deserialize<Event>(data.AsSpan(GlobalVariable.DATA_START), GlobalVariable.JsonOptions);
 
-        await Header.PrintErrorAsync();
+            json.UnixTime = DateTimeOffset.Now.ToUnixTimeSeconds();
 
-        await Header.PrintTimeAsync();
+            await Header.PrintErrorAsync();
 
-        await Header.TotalDailyEnergyAsync(json);
+            await Header.PrintTimeAsync();
 
-        await Header.TotalPowerAsync(json);
+            await Header.TotalDailyEnergyAsync(json);
 
-        await Dashboard.PrintRowAsync(server, json);
+            await Header.TotalPowerAsync(json);
+
+            await Dashboard.PrintRowAsync(server, json);
+        }
     }
 
     private static async Task<PingReply> PingAsync(string host)
