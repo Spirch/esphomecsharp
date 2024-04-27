@@ -40,7 +40,7 @@ sensor:
         - throttle_average: 1s
         - or:
           - throttle: 60s
-          - delta: 50
+          - delta: 25
 
     energy:
       name: "${devicename} Total Power"
@@ -62,7 +62,7 @@ sensor:
         - throttle_average: 1s
         - or:
           - throttle: 60s
-          - delta: 1
+          - delta: 25
           
     power_factor:
       name: "${devicename} Power Factor"

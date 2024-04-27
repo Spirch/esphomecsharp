@@ -40,7 +40,8 @@ public sealed class Dashboard
     {
         if (GlobalVariable.FinalRows.TryGetValue(json.Id, out RowInfo row))
         {
-            ConsoleOperation.AddQueue(EConsoleScreen.Dashboard, async () =>
+            ConsoleOperation.AddQueue(EConsoleScreen.Dashboard, 
+            async () =>
             {
                 row.LastPrint = json.State.PadCenter(row.Padding);
 
@@ -56,15 +57,15 @@ public sealed class Dashboard
             },
             async () =>
             {
-                if (Math.Abs(json.Data - row.LastValue) >= row.RecordDelta || row.LastRecord >= row.RecordThrottle)
+                if (!row.LastRecordSw.IsRunning || Math.Abs(json.Data - row.LastValue) >= row.RecordDelta || row.LastRecordSw.Elapsed.TotalSeconds >= row.RecordThrottle)
                 {
-                    row.LastValue = json.Data;
-                    row.LastRecord = 0;
-                    await EspHomeContext.InsertRowAsync(json, row);
-                }
-                else
-                {
-                    row.RecordThrottle++;
+                    if(row.LastValue != json.Data)
+                    {
+                        row.LastValue = json.Data;
+                        await EspHomeContext.InsertRowAsync(json, row);
+                    }
+
+                    row.LastRecordSw.Restart();
                 }
             });
 
@@ -81,7 +82,6 @@ public sealed class Dashboard
 
     public static async Task PrintStateAsync(EState state, int row)
     {
-
         if (state == EState.Running)
         {
             ConsoleOperation.AddQueue(EConsoleScreen.Dashboard, async () =>

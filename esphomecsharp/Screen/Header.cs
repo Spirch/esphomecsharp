@@ -55,55 +55,54 @@ public sealed class Header
 
     public static async Task TotalDailyEnergyAsync(Event json)
     {
-        if (GlobalVariable.TotalDailyEnergy.ContainsKey(json.Id))
+        if (GlobalVariable.TotalDailyEnergy.TryGetValue(json.Id, out decimal value) &&
+            GlobalVariable.FinalRows.TryGetValue($"{json.Id}{GlobalVariable.RES_TOTAL}", out RowInfo row) &&
+            value != json.Data)
         {
-            if (GlobalVariable.FinalRows.TryGetValue($"{json.Id}{GlobalVariable.RES_TOTAL}", out RowInfo row))
+            GlobalVariable.TotalDailyEnergy[json.Id] = json.Data;
+            var total = GlobalVariable.TotalDailyEnergy.Sum(x => x.Value);
+
+            ConsoleOperation.AddQueue(EConsoleScreen.Header, async () =>
             {
-                GlobalVariable.TotalDailyEnergy[json.Id] = json.Data;
-                var total = GlobalVariable.TotalDailyEnergy.Sum(x => x.Value);
+                Console.ForegroundColor = ConsoleColor.White;
+                Console.SetCursorPosition(GlobalVariable.CONSOLE_LEFT_POS, 2);
+                Console.Write($"{GlobalVariable.RES_TOTAL_DAILY_ENERGY} {total} {GlobalVariable.RES_KILLO_WATT}".PadRight(GlobalVariable.CONSOLE_RIGHT_PAD));
 
-                ConsoleOperation.AddQueue(EConsoleScreen.Header, async () =>
-                {
-                    Console.ForegroundColor = ConsoleColor.White;
-                    Console.SetCursorPosition(GlobalVariable.CONSOLE_LEFT_POS, 2);
-                    Console.Write($"{GlobalVariable.RES_TOTAL_DAILY_ENERGY} {total} {GlobalVariable.RES_KILLO_WATT}".PadRight(GlobalVariable.CONSOLE_RIGHT_PAD));
+                await Task.CompletedTask;
+            });
 
-                    await Task.CompletedTask;
-                });
-
-                if (GlobalVariable.InsertTotalDailyEnergy.Elapsed.TotalSeconds >= GlobalVariable.Settings.TotalInsertInterval)
-                {
-                    await EspHomeContext.InsertTotalAsync(GlobalVariable.RES_KILLO_WATT, row, total);
-                    GlobalVariable.InsertTotalDailyEnergy.Restart();
-                }
+            if (GlobalVariable.InsertTotalDailyEnergy.Elapsed.TotalSeconds >= GlobalVariable.Settings.TotalInsertInterval)
+            {
+                await EspHomeContext.InsertTotalAsync(GlobalVariable.RES_KILLO_WATT, row, total);
+                GlobalVariable.InsertTotalDailyEnergy.Restart();
             }
         }
+
         await Task.CompletedTask;
     }
 
     public static async Task TotalPowerAsync(Event json)
     {
-        if (GlobalVariable.TotalPower.ContainsKey(json.Id))
+        if (GlobalVariable.TotalPower.TryGetValue(json.Id, out decimal value) &&
+            GlobalVariable.FinalRows.TryGetValue($"{json.Id}{GlobalVariable.RES_TOTAL}", out RowInfo row) &&
+            value != json.Data)
         {
-            if (GlobalVariable.FinalRows.TryGetValue($"{json.Id}{GlobalVariable.RES_TOTAL}", out RowInfo row))
+            GlobalVariable.TotalPower[json.Id] = json.Data;
+            var total = GlobalVariable.TotalPower.Sum(x => x.Value);
+
+            ConsoleOperation.AddQueue(EConsoleScreen.Header, async () =>
             {
-                GlobalVariable.TotalPower[json.Id] = json.Data;
-                var total = GlobalVariable.TotalPower.Sum(x => x.Value);
+                Console.ForegroundColor = ConsoleColor.White;
+                Console.SetCursorPosition(GlobalVariable.CONSOLE_LEFT_POS, 3);
+                Console.Write($"{GlobalVariable.RES_TOTAL_POWER} {total} {GlobalVariable.RES_WATT}".PadRight(GlobalVariable.CONSOLE_RIGHT_PAD));
 
-                ConsoleOperation.AddQueue(EConsoleScreen.Header, async () =>
-                {
-                    Console.ForegroundColor = ConsoleColor.White;
-                    Console.SetCursorPosition(GlobalVariable.CONSOLE_LEFT_POS, 3);
-                    Console.Write($"{GlobalVariable.RES_TOTAL_POWER} {total} {GlobalVariable.RES_WATT}".PadRight(GlobalVariable.CONSOLE_RIGHT_PAD));
+                await Task.CompletedTask;
+            });
 
-                    await Task.CompletedTask;
-                });
-
-                if (GlobalVariable.InsertTotalPower.Elapsed.TotalSeconds >= GlobalVariable.Settings.TotalInsertInterval)
-                {
-                    await EspHomeContext.InsertTotalAsync(GlobalVariable.RES_WATT, row, total);
-                    GlobalVariable.InsertTotalPower.Restart();
-                }
+            if (GlobalVariable.InsertTotalPower.Elapsed.TotalSeconds >= GlobalVariable.Settings.TotalInsertInterval)
+            {
+                await EspHomeContext.InsertTotalAsync(GlobalVariable.RES_WATT, row, total);
+                GlobalVariable.InsertTotalPower.Restart();
             }
         }
 

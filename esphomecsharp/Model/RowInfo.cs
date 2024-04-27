@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 
 namespace esphomecsharp.Model;
 
@@ -14,12 +15,12 @@ sealed public class RowInfo
     public int RecordThrottle { get; set; }
     public string LastPrint { get; set; }
     public decimal LastValue { get; set; }
-    public int LastRecord { get; set; }
+    public Stopwatch LastRecordSw { get; set; }
 
     public int? DbDescId { get; set; }
 
     public override string ToString()
     {
-        return $"Name: {Name} Unit: {Unit} Col: {Col} DbDescId: {DbDescId} LastValue: {LastPrint} LastRecord: {LastRecord} Server: {Server} RecordDelta: {RecordDelta} RecordThrottle: {RecordThrottle}";
+        return $"Name: {Name} Unit: {Unit} Col: {Col} DbDescId: {DbDescId} LastValue: {LastPrint} LastRecordSw: {LastRecordSw.Elapsed.TotalSeconds} Server: {Server} RecordDelta: {RecordDelta} RecordThrottle: {RecordThrottle}";
     }
 }

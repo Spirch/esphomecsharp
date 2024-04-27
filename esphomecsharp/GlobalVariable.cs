@@ -137,6 +137,8 @@ internal static class GlobalVariable
 
         int rowPadding = Math.Max(rawRows.Max(x => x.Name.Length) + 2, serverPadding);
 
+        //Console.WindowWidth = CONSOLE_RIGHT_PAD + (rowPadding * rawRows.Count);
+
         foreach (var header in rawRows)
         {
             ColHeader.Add(new RowInfo()
@@ -174,6 +176,7 @@ internal static class GlobalVariable
         foreach (var row in rows)
         {
             FinalRows.Add(row.id, row.row);
+            row.row.LastRecordSw = new Stopwatch();
         }
     }
 }

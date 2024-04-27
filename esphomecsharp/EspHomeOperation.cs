@@ -138,7 +138,10 @@ public static class EspHomeOperation
         //basic check to see if the line could be json
         if(data?.Length > GlobalVariable.DATA_START && data[GlobalVariable.DATA_START] == '{')
         {
-            //Debug.Print(data);
+
+#if DEBUG
+            Debug.Print(data);
+#endif
 
             var json = JsonSerializer.Deserialize<Event>(data.AsSpan(GlobalVariable.DATA_START), GlobalVariable.JsonOptions);
 

@@ -5,7 +5,7 @@ esp32:
   board: nodemcu-32s
   
 preferences:
-  flash_write_interval: 10min
+  flash_write_interval: 15min
 
 #logger:
 

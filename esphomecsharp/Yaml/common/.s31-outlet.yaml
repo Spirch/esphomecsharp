@@ -6,7 +6,7 @@ esp8266:
   restore_from_flash: true
   
 preferences:
-  flash_write_interval: 10min
+  flash_write_interval: 15min
 
 #logger:
 #  baud_rate: 0 # (UART logging interferes with cse7766)  

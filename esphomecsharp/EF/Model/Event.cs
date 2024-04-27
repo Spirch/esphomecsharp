@@ -29,6 +29,9 @@ sealed public class Event : EspEvent, IDbItem
         if (Value is decimal valDec)
             return valDec;
 
+        if (Value is null)
+            return 0m;
+
         if (decimal.TryParse(Value.ToString(), NumberStyles.Number | NumberStyles.AllowExponent, null, out decimal dec))
             return Truncate(dec, 2);
 
