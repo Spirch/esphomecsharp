@@ -108,7 +108,9 @@ public static class EspHomeOperation
     private static async Task MonitorAsync(Server server)
     {
         int readPerSecond = 0;
+        int numberOfNull = 0;
         var watchPerSecond = Stopwatch.StartNew();
+        var watchNull = Stopwatch.StartNew();
         bool handleNext = false;
 
         using var client = new HttpClient();
@@ -122,7 +124,7 @@ public static class EspHomeOperation
 
             string data = await reader.ReadLineAsync().WaitAsync(server.CancellationTokenSource.Token);
 
-            ThrowIfIssue(server, data, ref watchPerSecond, ref readPerSecond);
+            ThrowIfIssue(server, data, ref watchPerSecond, ref readPerSecond, ref watchNull, ref numberOfNull);
 
             if (handleNext)
             {
@@ -130,19 +132,17 @@ public static class EspHomeOperation
             }
 
             handleNext = string.Equals(data, GlobalVariable.EVENT_STATE, StringComparison.OrdinalIgnoreCase);
+
+            File.AppendAllText(server.Name + ".txt", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fffffff") + " : " + (data ?? "<null>") + Environment.NewLine);
         }
     }
 
     private static async Task HandleEventAsync(string data, Server server)
     {
         //basic check to see if the line could be json
-        if(data?.Length > GlobalVariable.DATA_START && data[GlobalVariable.DATA_START] == '{')
+        //if(data?.Length > GlobalVariable.DATA_START && data[GlobalVariable.DATA_START] == '{')
+        if(data?.StartsWith(GlobalVariable.DATA_JSON) == true)
         {
-
-#if DEBUG
-            Debug.Print(data);
-#endif
-
             var json = JsonSerializer.Deserialize<Event>(data.AsSpan(GlobalVariable.DATA_START), GlobalVariable.JsonOptions);
 
             json.UnixTime = DateTimeOffset.Now.ToUnixTimeSeconds();
@@ -179,7 +179,7 @@ public static class EspHomeOperation
         await Task.Delay(5000);
     }
 
-    private static void ThrowIfIssue(Server server, string data, ref Stopwatch watchPerSecond, ref int readPerSecond)
+    private static void ThrowIfIssue(Server server, string data, ref Stopwatch watchPerSecond, ref int readPerSecond, ref Stopwatch watchNull, ref int numberOfNull)
     {
         if (server.CancellationTokenSource.IsCancellationRequested)
         {
@@ -188,7 +188,8 @@ public static class EspHomeOperation
 
         if (data == null)
         {
-            throw new Exception($"{server.Name} data is null");
+            numberOfNull++;
+            Debug.WriteLine($"{DateTime.Now} {server.Name} data is null");
         }
 
         //
@@ -203,11 +204,22 @@ public static class EspHomeOperation
         {
             if (readPerSecond > 100) //should never happen! but it did...
             {
-                throw new Exception($"{server.Name} readPerSecond");
+                throw new Exception($"{server.Name} readPerSecond, read {readPerSecond}, null {numberOfNull}");
             }
 
             watchPerSecond.Restart();
             readPerSecond = 0;
+        }
+
+        if (watchNull.ElapsedMilliseconds > 1000 * 60 * 2) // 2 minutes
+        {
+            if (numberOfNull > 1)
+            {
+                throw new Exception($"{server.Name} null, read {readPerSecond}, null {numberOfNull}");
+            }
+
+            watchNull.Restart();
+            numberOfNull = 0;
         }
     }
 }

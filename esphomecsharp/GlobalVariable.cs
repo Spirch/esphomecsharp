@@ -34,6 +34,7 @@ internal static class GlobalVariable
     public const int CONSOLE_LEFT_POS = 5;
     public const int CONSOLE_RIGHT_PAD = 35;
     public const int DATA_START = 6; //"data: ".Length;
+    public const string DATA_JSON = "data: {";
     public const string EVENT_STATE = "event: state";
 
     public static readonly JsonSerializerOptions JsonOptions;

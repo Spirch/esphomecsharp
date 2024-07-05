@@ -21,18 +21,27 @@ public static class EspHomeContext
             {
                 await Task.Run(async () =>
                 {
-                    using var EspHomeDb = new Context();
-
-                    foreach (var (dbItem, rowInfo) in Queue.GetConsumingEnumerable())
+                    try
                     {
-                        if (rowInfo != null && dbItem is Event json)
-                        {
-                            await GetDescIdAsync(EspHomeDb, json, rowInfo);
-                        }
+                        using var EspHomeDb = new Context();
 
-                        await EspHomeDb.AddAsync(dbItem);
-                        await EspHomeDb.SaveChangesAsync();
-                        EspHomeDb.ChangeTracker.Clear();
+                        foreach (var (dbItem, rowInfo) in Queue.GetConsumingEnumerable())
+                        {
+                            if (rowInfo != null && dbItem is Event json)
+                            {
+                                await GetDescIdAsync(EspHomeDb, json, rowInfo);
+                            }
+
+                            await EspHomeDb.AddAsync(dbItem);
+                            await EspHomeDb.SaveChangesAsync();
+                            EspHomeDb.ChangeTracker.Clear();
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        await e.HandleErrorAsync("EspHomeContext.RunAndProcess.Run");
+
+                        await Task.Delay(5000);
                     }
                 });
             }

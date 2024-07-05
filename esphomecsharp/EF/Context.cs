@@ -55,7 +55,10 @@ public sealed class Context : DbContext
             x.Property(p => p.Name)
              .IsRequired();
 
-            x.HasIndex(p => p.Name)
+            x.Property(p => p.FriendlyName)
+             .IsRequired();
+
+            x.HasIndex(p => new { p.Name, p.FriendlyName })
              .IsUnique();
         });
 
