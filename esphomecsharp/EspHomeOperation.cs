@@ -133,7 +133,7 @@ public static class EspHomeOperation
 
             handleNext = string.Equals(data, GlobalVariable.EVENT_STATE, StringComparison.OrdinalIgnoreCase);
 
-            File.AppendAllText(server.Name + ".txt", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fffffff") + " : " + (data ?? "<null>") + Environment.NewLine);
+            //File.AppendAllText(server.Name + ".txt", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fffffff") + " : " + (data ?? "<null>") + Environment.NewLine);
         }
     }
 
