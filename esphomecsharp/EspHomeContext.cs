@@ -144,4 +144,18 @@ public static class EspHomeContext
 
         return await EspHomeDb.Error.CountAsync(x => !x.IsHandled);
     }
+
+    public static async Task SoftDeleteErrorAsync()
+    {
+        using var EspHomeDb = new Context();
+
+        await EspHomeDb.Error.Where(x => !x.IsHandled).ExecuteUpdateAsync(x => x.SetProperty(p => p.IsHandled, v => true));
+    }
+
+    public static async Task HardDeleteErrorAsync()
+    {
+        using var EspHomeDb = new Context();
+
+        await EspHomeDb.Error.Where(x => x.IsHandled).ExecuteDeleteAsync();
+    }
 }

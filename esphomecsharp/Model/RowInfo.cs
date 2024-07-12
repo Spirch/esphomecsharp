@@ -16,6 +16,7 @@ sealed public class RowInfo
     public string LastPrint { get; set; }
     public decimal LastValue { get; set; }
     public Stopwatch LastRecordSw { get; set; }
+    public bool Hidden { get; set; }
 
     public int? DbDescId { get; set; }
 

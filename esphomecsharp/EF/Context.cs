@@ -38,6 +38,7 @@ public sealed class Context : DbContext
             x.Ignore(p => p.Name);
             x.Ignore(p => p.Value);
             x.Ignore(p => p.State);
+            x.Ignore(p => p.Event_Type);
 
             x.HasOne(d => d.EspHomeId)
              .WithMany(dm => dm.Event)
@@ -69,6 +70,9 @@ public sealed class Context : DbContext
             x.Property(p => p.ErrorId)
              .IsRequired()
              .ValueGeneratedOnAdd();
+
+            x.Property(p => p.Exception)
+             .IsRequired();
 
             x.Property(p => p.Message)
              .IsRequired();

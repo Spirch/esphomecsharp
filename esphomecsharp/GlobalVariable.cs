@@ -1,4 +1,5 @@
 ﻿using esphomecsharp.Model;
+using esphomecsharp.Screen;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
@@ -15,12 +16,14 @@ internal static class GlobalVariable
         public string Prefix { get; set; }
         public string Suffix { get; set; }
         public int Column { get; set; }
+        public int Width { get; set; }
         public string Name { get; set; }
         public string Unit { get; set; }
         public bool IsTotalDailyEnergy { get; set; }
         public bool IsTotalPower { get; set; }
         public decimal RecordDelta { get; set; }
         public int RecordThrottle { get; set; }
+        public bool Hidden { get; set; }
     }
 
     public const string RES_TOTAL_DAILY_ENERGY = "Total Daily Energy:";
@@ -92,7 +95,7 @@ internal static class GlobalVariable
         var rowTotalDailyEnergy = rawRows.Single(x => x.IsTotalDailyEnergy);
         var rowTotalPower = rawRows.Single(x => x.IsTotalPower);
 
-        int serverPadding = Servers.Max(x => x.FriendlyName.Length) + 2;
+        int serverPadding = Servers.Max(x => x.FriendlyName.Length);
 
         foreach (var server in Servers)
         {
@@ -136,26 +139,30 @@ internal static class GlobalVariable
             });
         }
 
-        int rowPadding = Math.Max(rawRows.Max(x => x.Name.Length) + 2, serverPadding);
-
-        //Console.WindowWidth = CONSOLE_RIGHT_PAD + (rowPadding * rawRows.Count);
+        int ColPos = serverPadding + 1;
+        int width;
 
         foreach (var header in rawRows)
         {
+            width = Math.Max(header.Width, header.Name.Length + 2);
             ColHeader.Add(new RowInfo()
             {
                 Server = new()
                 {
                     Row = TABLE_START_COL,
                 },
-                Padding = rowPadding,
+                Padding = width,
                 Name = header.Name,
-                Col = header.Column * rowPadding,
+                Col = ColPos,
                 Color = ConsoleColor.White,
+                Hidden = header.Hidden,
             });
+
+            ColPos += width;
         }
 
         var rows = from r in rawRows
+                   join h in ColHeader on r.Name equals h.Name
                    from s in Servers
                    select new
                    {
@@ -163,14 +170,15 @@ internal static class GlobalVariable
                        row = new RowInfo()
                        {
                            Server = s,
-                           Padding = rowPadding,
+                           Padding = h.Padding,
                            Name = r.Name,
                            Unit = r.Unit,
 
-                           Col = r.Column * rowPadding,
+                           Col = h.Col,
 
                            RecordDelta = r.RecordDelta,
                            RecordThrottle = r.RecordThrottle,
+                           Hidden = r.Hidden,
                        }
                    };
 

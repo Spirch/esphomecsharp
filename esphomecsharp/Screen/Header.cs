@@ -8,9 +8,9 @@ namespace esphomecsharp.Screen;
 
 public sealed class Header
 {
-    public static async Task PrintErrorAsync()
+    public static async Task PrintErrorAsync(bool bypassInterval = false)
     {
-        if (GlobalVariable.PrintError.Elapsed.TotalSeconds > GlobalVariable.Settings.ShowErrorInterval)
+        if (bypassInterval || GlobalVariable.PrintError.Elapsed.TotalSeconds > GlobalVariable.Settings.ShowErrorInterval)
         {
             ConsoleOperation.AddQueue(EConsoleScreen.Header, async () =>
             {
@@ -115,9 +115,9 @@ public sealed class Header
         {
             Console.ForegroundColor = ConsoleColor.White;
             Console.SetCursorPosition(GlobalVariable.CONSOLE_LEFT_POS + GlobalVariable.CONSOLE_RIGHT_PAD + 1, 1);
-            Console.WriteLine("i : hide cursor   r : reconnect all");
+            Console.WriteLine($"{ConsoleKey.F1} : hide cursor   {ConsoleKey.F3} : reconnect all  {ConsoleKey.F7} : handle all errors");
             Console.SetCursorPosition(GlobalVariable.CONSOLE_LEFT_POS + GlobalVariable.CONSOLE_RIGHT_PAD + 1, 2);
-            Console.WriteLine("c : clear header  q : quit");
+            Console.WriteLine($"{ConsoleKey.F2} : clear header  {ConsoleKey.F4} : quit           {ConsoleKey.F8} : delete handled errors");
 
             await Task.CompletedTask;
         });

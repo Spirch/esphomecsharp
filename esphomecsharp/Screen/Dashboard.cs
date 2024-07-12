@@ -1,6 +1,7 @@
 ﻿using esphomecsharp.EF.Model;
 using esphomecsharp.Model;
 using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 
 namespace esphomecsharp.Screen;
@@ -11,26 +12,32 @@ public sealed class Dashboard
     {
         foreach (var header in GlobalVariable.ColHeader)
         {
-            ConsoleOperation.AddQueue(EConsoleScreen.Dashboard, async () =>
+            if(!header.Hidden)
             {
-                Console.ForegroundColor = header.Color;
-                Console.SetCursorPosition(GlobalVariable.CONSOLE_LEFT_POS + header.Col, header.Server.Row);
-                Console.Write(header.Name.PadCenter(header.Padding));
+                ConsoleOperation.AddQueue(EConsoleScreen.Dashboard, async () =>
+                {
+                    Console.ForegroundColor = header.Color;
+                    Console.SetCursorPosition(GlobalVariable.CONSOLE_LEFT_POS + header.Col, header.Server.Row);
+                    Console.Write(header.Name.PadCenter(header.Padding));
 
-                await Task.CompletedTask;
-            });
+                    await Task.CompletedTask;
+                });
+            }
         }
 
         foreach (var header in GlobalVariable.RowHeader)
         {
-            ConsoleOperation.AddQueue(EConsoleScreen.Dashboard, async () =>
+            if (!header.Hidden)
             {
-                Console.ForegroundColor = header.Color;
-                Console.SetCursorPosition(GlobalVariable.CONSOLE_LEFT_POS + header.Col, header.Server.Row);
-                Console.Write(header.Server.FriendlyName.PadLeft(header.Padding));
+                ConsoleOperation.AddQueue(EConsoleScreen.Dashboard, async () =>
+                {
+                    Console.ForegroundColor = header.Color;
+                    Console.SetCursorPosition(GlobalVariable.CONSOLE_LEFT_POS + header.Col, header.Server.Row);
+                    Console.Write(header.Server.FriendlyName.PadLeft(header.Padding));
 
-                await Task.CompletedTask;
-            });
+                    await Task.CompletedTask;
+                });
+            }
         }
 
         await Task.CompletedTask;
@@ -40,7 +47,7 @@ public sealed class Dashboard
     {
         if (GlobalVariable.FinalRows.TryGetValue(json.Id, out RowInfo row))
         {
-            ConsoleOperation.AddQueue(EConsoleScreen.Dashboard, 
+            ConsoleOperation.AddQueue(EConsoleScreen.Dashboard,
             async () =>
             {
                 row.LastPrint = json.State.PadCenter(row.Padding);
@@ -49,32 +56,41 @@ public sealed class Dashboard
             },
             async () =>
             {
-                Console.ForegroundColor = x.Color;
-                Console.SetCursorPosition(GlobalVariable.CONSOLE_LEFT_POS + row.Col, row.Server.Row);
-                Console.Write(row.LastPrint);
+                if (!row.Hidden)
+                {
+                    Console.ForegroundColor = x.Color;
+                    Console.SetCursorPosition(GlobalVariable.CONSOLE_LEFT_POS + row.Col, row.Server.Row);
+                    Console.Write(row.LastPrint);
+                }
 
                 await Task.CompletedTask;
             },
             async () =>
             {
-                if (!row.LastRecordSw.IsRunning || Math.Abs(json.Data - row.LastValue) >= row.RecordDelta || row.LastRecordSw.Elapsed.TotalSeconds >= row.RecordThrottle)
+                if (json.Event_Type == null)
                 {
-                    if(row.LastValue != json.Data)
+                    if (!row.LastRecordSw.IsRunning || Math.Abs(json.Data - row.LastValue) >= row.RecordDelta || row.LastRecordSw.Elapsed.TotalSeconds >= row.RecordThrottle)
                     {
-                        row.LastValue = json.Data;
-                        await EspHomeContext.InsertRowAsync(json, row);
-                    }
+                        if (row.LastValue != json.Data)
+                        {
+                            row.LastValue = json.Data;
+                            await EspHomeContext.InsertRowAsync(json, row);
+                        }
 
-                    row.LastRecordSw.Restart();
+                        row.LastRecordSw.Restart();
+                    }
+                }
+                else 
+                {
+                    await EspHomeContext.InsertRowAsync(json, row);
                 }
             });
-
 
             x.LastActivity.Restart();
         }
         //else
         //{
-        //    Debug.Print(json.Id);
+        //    Debug.WriteLine(json.Id);
         //}
 
         await Task.CompletedTask;

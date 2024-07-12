@@ -59,50 +59,66 @@ public static class ConsoleOperation
     {
         var input = Console.ReadKey(true);
 
-        await ToggleCursorVisibilityAsync(input);
+        switch(input.Key)
+        {
+            case ConsoleKey.F1:
+                await ToggleCursorVisibilityAsync();
+                break;
+            case ConsoleKey.F2:
+                await ClearHeaderAsync();
+                break;
+            case ConsoleKey.F3:
+                await ReconnectServersAsync();
+                break;
+            case ConsoleKey.F4:
+                return false;
 
-        await ReconnectServersAsync(input);
+            case ConsoleKey.F7:
+                await SoftDeleteErrorAsync();
+                break;
+            case ConsoleKey.F8:
+                await HardDeleteErrorAsync();
+                break;
+        }
 
-        await ClearHeaderAsync(input);
-
-        return input.KeyChar != 'q';
+        return true;
     }
 
-    public static async Task ToggleCursorVisibilityAsync(ConsoleKeyInfo input)
+    public static async Task ToggleCursorVisibilityAsync()
     {
-        if (input.KeyChar == 'i')
-        {
-            Console.CursorVisible = !Console.CursorVisible;
-        }
+        Console.CursorVisible = !Console.CursorVisible;
 
         await Task.CompletedTask;
     }
 
-    public static async Task ReconnectServersAsync(ConsoleKeyInfo input)
+    public static async Task ReconnectServersAsync()
     {
-        if (input.KeyChar == 'r')
-        {
-            GlobalVariable.Servers.ForEach(x => x.CancellationTokenSource.Cancel());
-        }
+        GlobalVariable.Servers.ForEach(x => x.CancellationTokenSource.Cancel());
 
         await Task.CompletedTask;
     }
 
-    public static async Task ClearHeaderAsync(ConsoleKeyInfo input)
+    public static async Task SoftDeleteErrorAsync()
     {
-        if (input.KeyChar == 'c')
+        await EspHomeContext.SoftDeleteErrorAsync();
+        await Header.PrintErrorAsync(true);
+    }
+
+    public static async Task HardDeleteErrorAsync()
+    {
+        await EspHomeContext.HardDeleteErrorAsync();
+    }
+
+    public static async Task ClearHeaderAsync()
+    {
+        AddQueue(EConsoleScreen.Header, async () =>
         {
-            AddQueue(EConsoleScreen.Header, async () =>
-            {
-                Console.SetCursorPosition(0, 0);
-                Console.WriteLine("".PadRight(Console.WindowWidth * 4));
+            Console.SetCursorPosition(0, 0);
+            Console.WriteLine("".PadRight(Console.WindowWidth * 4));
 
-                await Task.CompletedTask;
-            });
+            await Task.CompletedTask;
+        });
 
-            await Header.PrintHelp();
-        }
-
-        await Task.CompletedTask;
+        await Header.PrintHelp();
     }
 }
