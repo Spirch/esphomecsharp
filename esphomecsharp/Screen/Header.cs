@@ -109,19 +109,83 @@ public sealed class Header
         await Task.CompletedTask;
     }
 
+    private static int LogToFilePos;
+
     public static async Task PrintHelp()
     {
         ConsoleOperation.AddQueue(EConsoleScreen.Header, async () =>
         {
             Console.ForegroundColor = ConsoleColor.White;
+
             Console.SetCursorPosition(GlobalVariable.CONSOLE_LEFT_POS + GlobalVariable.CONSOLE_RIGHT_PAD + 1, 1);
-            Console.WriteLine($"{ConsoleKey.F1} : hide cursor   {ConsoleKey.F3} : reconnect all  {ConsoleKey.F7} : handle all errors");
+            Console.WriteLine($"{ConsoleOperation.Key.HideCursor} : Hide cursor     {ConsoleOperation.Key.HandleNextError} : Handle next error");
+
             Console.SetCursorPosition(GlobalVariable.CONSOLE_LEFT_POS + GlobalVariable.CONSOLE_RIGHT_PAD + 1, 2);
-            Console.WriteLine($"{ConsoleKey.F2} : clear header  {ConsoleKey.F4} : quit           {ConsoleKey.F8} : delete handled errors");
+            Console.Write($"{ConsoleOperation.Key.RefreshHeader} : Refresh header  {ConsoleOperation.Key.HandleAllErrors} : Handle all errors      {ConsoleOperation.Key.LogAllToFile}  : Log all to files");
+
+            LogToFilePos = Console.CursorLeft + 2;
+            Console.WriteLine();
+
+            Console.SetCursorPosition(GlobalVariable.CONSOLE_LEFT_POS + GlobalVariable.CONSOLE_RIGHT_PAD + 1, 3);
+            Console.WriteLine($"{ConsoleOperation.Key.ReconnectAll} : Reconnect all   {ConsoleOperation.Key.DeleteAllHandledErrors} : Delete handled errors  {ConsoleOperation.Key.Quit} : Quit");
+
+            await RefreshLogFlag();
 
             await Task.CompletedTask;
         });
 
         await Task.CompletedTask;
+    }
+
+    public static async Task RefreshLogFlag()
+    {
+        ConsoleOperation.AddQueue(EConsoleScreen.Header, async () =>
+        {
+            Console.SetCursorPosition(LogToFilePos, 2);
+            if (EspHomeOperation.LogToFile)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("!!!");
+            }
+            else
+            {
+                Console.WriteLine("   ");
+            }
+
+            await Task.CompletedTask;
+        });
+
+        await Task.CompletedTask;
+    }
+
+    private static Guid guid;
+    public static async Task ShowErrorAsync(string message)
+    {
+        var localGuid = Guid.NewGuid();
+        guid = localGuid;
+
+        ConsoleOperation.AddQueue(EConsoleScreen.Header, async () =>
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.SetCursorPosition(GlobalVariable.CONSOLE_LEFT_POS + GlobalVariable.CONSOLE_RIGHT_PAD + 1, 0);
+            var leftBuffer = Console.WindowWidth - (message.Length + Console.CursorLeft);
+            Console.Write(message);
+            Console.Write(string.Concat(Enumerable.Repeat(' ', leftBuffer)));
+
+            await Task.CompletedTask;
+        });
+
+        await Task.Delay(10000);
+
+        ConsoleOperation.AddQueue(EConsoleScreen.Header, async () =>
+        {
+            if(guid == localGuid)
+            {
+                Console.SetCursorPosition(GlobalVariable.CONSOLE_LEFT_POS + GlobalVariable.CONSOLE_RIGHT_PAD + 1, 0);
+                Console.Write(string.Concat(Enumerable.Repeat(' ', message.Length)));
+
+                await Task.CompletedTask;
+            }
+        });
     }
 }

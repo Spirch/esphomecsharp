@@ -1,6 +1,7 @@
 ﻿using esphomecsharp.EF;
 using esphomecsharp.EF.Model;
 using esphomecsharp.Model;
+using esphomecsharp.Screen;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Concurrent;
@@ -145,14 +146,28 @@ public static class EspHomeContext
         return await EspHomeDb.Error.CountAsync(x => !x.IsHandled);
     }
 
-    public static async Task SoftDeleteErrorAsync()
+    public static async Task SoftDeleteNextErrorAsync()
+    {
+        using var EspHomeDb = new Context();
+
+        var error = await EspHomeDb.Error.Where(x => !x.IsHandled).FirstOrDefaultAsync();
+
+        if (error != null)
+        {
+            error.IsHandled = true;
+            await EspHomeDb.SaveChangesAsync();
+            _ = Header.ShowErrorAsync(error.Message);
+        }
+    }
+
+    public static async Task SoftDeleteAllErrorAsync()
     {
         using var EspHomeDb = new Context();
 
         await EspHomeDb.Error.Where(x => !x.IsHandled).ExecuteUpdateAsync(x => x.SetProperty(p => p.IsHandled, v => true));
     }
 
-    public static async Task HardDeleteErrorAsync()
+    public static async Task HardDeleteAllHandledErrorAsync()
     {
         using var EspHomeDb = new Context();
 

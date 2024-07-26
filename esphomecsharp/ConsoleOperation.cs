@@ -8,6 +8,20 @@ namespace esphomecsharp;
 
 public static class ConsoleOperation
 {
+    public static class Key
+    {
+        public const ConsoleKey HideCursor = ConsoleKey.F2;
+        public const ConsoleKey RefreshHeader = ConsoleKey.F3;
+        public const ConsoleKey ReconnectAll = ConsoleKey.F4;
+
+        public const ConsoleKey HandleNextError = ConsoleKey.F6;
+        public const ConsoleKey HandleAllErrors = ConsoleKey.F7;
+        public const ConsoleKey DeleteAllHandledErrors = ConsoleKey.F8;
+
+        public const ConsoleKey LogAllToFile = ConsoleKey.F9;
+        public const ConsoleKey Quit = ConsoleKey.F12;
+    }
+
     private static readonly BlockingCollection<ConsoleAction> Queue = new();
 
     public static async Task RunAndProcessAsync()
@@ -61,24 +75,31 @@ public static class ConsoleOperation
 
         switch(input.Key)
         {
-            case ConsoleKey.F1:
+            case Key.HideCursor:
                 await ToggleCursorVisibilityAsync();
                 break;
-            case ConsoleKey.F2:
+            case Key.RefreshHeader:
                 await ClearHeaderAsync();
                 break;
-            case ConsoleKey.F3:
+            case Key.ReconnectAll:
                 await ReconnectServersAsync();
                 break;
-            case ConsoleKey.F4:
-                return false;
 
-            case ConsoleKey.F7:
-                await SoftDeleteErrorAsync();
+            case Key.HandleNextError:
+                await SoftDeleteNextErrorAsync();
                 break;
-            case ConsoleKey.F8:
-                await HardDeleteErrorAsync();
+            case Key.HandleAllErrors:
+                await SoftDeleteAllErrorAsync();
                 break;
+            case Key.DeleteAllHandledErrors:
+                await HardDeleteAllHandledErrorAsync();
+                break;
+
+            case Key.LogAllToFile:
+                await ToggleLogToFileAsync();
+                break;
+            case Key.Quit:
+                return false;
         }
 
         return true;
@@ -98,15 +119,30 @@ public static class ConsoleOperation
         await Task.CompletedTask;
     }
 
-    public static async Task SoftDeleteErrorAsync()
+    public static async Task SoftDeleteNextErrorAsync()
     {
-        await EspHomeContext.SoftDeleteErrorAsync();
+        await EspHomeContext.SoftDeleteNextErrorAsync();
         await Header.PrintErrorAsync(true);
     }
 
-    public static async Task HardDeleteErrorAsync()
+    public static async Task SoftDeleteAllErrorAsync()
     {
-        await EspHomeContext.HardDeleteErrorAsync();
+        await EspHomeContext.SoftDeleteAllErrorAsync();
+        await Header.PrintErrorAsync(true);
+    }
+
+    public static async Task HardDeleteAllHandledErrorAsync()
+    {
+        await EspHomeContext.HardDeleteAllHandledErrorAsync();
+    }
+
+    public static async Task ToggleLogToFileAsync()
+    {
+        EspHomeOperation.LogToFile = !EspHomeOperation.LogToFile;
+
+        await Header.RefreshLogFlag();
+
+        await Task.CompletedTask;
     }
 
     public static async Task ClearHeaderAsync()

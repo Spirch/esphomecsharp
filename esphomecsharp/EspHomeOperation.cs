@@ -14,6 +14,7 @@ namespace esphomecsharp;
 
 public static class EspHomeOperation
 {
+    public static bool LogToFile {  get; set; }
     public static bool Running { get; set; }
 
     //try reconnect if no activity after X
@@ -133,7 +134,12 @@ public static class EspHomeOperation
 
             handleNext = string.Equals(data, GlobalVariable.EVENT_STATE, StringComparison.OrdinalIgnoreCase);
 
-            //File.AppendAllText(server.Name + ".txt", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fffffff") + " : " + (data ?? "<null>") + Environment.NewLine);
+            if(LogToFile)
+            {
+                var now = DateTime.Now;
+
+                File.AppendAllText(server.Name + " - " + now.ToString("yyyy-MM-dd") + ".txt", now.ToString("yyyy-MM-dd HH:mm:ss.fffffff") + " : " + (data ?? "<null>") + Environment.NewLine);
+            }
         }
     }
 
