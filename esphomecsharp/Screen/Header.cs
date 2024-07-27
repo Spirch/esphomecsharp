@@ -169,20 +169,39 @@ public sealed class Header
             Console.ForegroundColor = ConsoleColor.Red;
             Console.SetCursorPosition(GlobalVariable.CONSOLE_LEFT_POS + GlobalVariable.CONSOLE_RIGHT_PAD + 1, 0);
             var leftBuffer = Console.WindowWidth - (message.Length + Console.CursorLeft);
-            Console.Write(message);
-            Console.Write(string.Concat(Enumerable.Repeat(' ', leftBuffer)));
+            Console.Write(message.PadRight(leftBuffer));
 
             await Task.CompletedTask;
         });
 
-        await Task.Delay(10000);
+        for (int i = 10; i > 0; i--)
+        {
+            await Task.Delay(1000);
+
+            ConsoleOperation.AddQueue(EConsoleScreen.Header, async () =>
+            {
+                if (guid == localGuid)
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.SetCursorPosition(GlobalVariable.CONSOLE_LEFT_POS + GlobalVariable.CONSOLE_RIGHT_PAD - 2, 0);
+                    Console.Write(i.ToString().PadLeft(2));
+
+                    await Task.CompletedTask;
+                }
+            });
+
+            if (guid != localGuid)
+            {
+                break;
+            }
+        }
 
         ConsoleOperation.AddQueue(EConsoleScreen.Header, async () =>
         {
             if(guid == localGuid)
             {
-                Console.SetCursorPosition(GlobalVariable.CONSOLE_LEFT_POS + GlobalVariable.CONSOLE_RIGHT_PAD + 1, 0);
-                Console.Write(string.Concat(Enumerable.Repeat(' ', message.Length)));
+                Console.SetCursorPosition(GlobalVariable.CONSOLE_LEFT_POS + GlobalVariable.CONSOLE_RIGHT_PAD - 2, 0);
+                Console.Write("".PadRight(message.Length + 3));
 
                 await Task.CompletedTask;
             }
