@@ -156,7 +156,7 @@ public static class EspHomeContext
         {
             error.IsHandled = true;
             await EspHomeDb.SaveChangesAsync();
-            _ = Header.ShowErrorAsync(error.Message);
+            _ = Header.ShowErrorAsync(error);
         }
     }
 

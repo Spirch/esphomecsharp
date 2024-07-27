@@ -115,9 +115,10 @@ public sealed class Header
     }
 
     private static Guid guid;
-    public static async Task ShowErrorAsync(string message)
+    public static async Task ShowErrorAsync(Error error)
     {
         var localGuid = Guid.NewGuid();
+        var message = $"{error.Date} - {error.Message}";
         guid = localGuid;
 
         ConsoleOperation.AddQueue(EConsoleScreen.Header, async () =>
