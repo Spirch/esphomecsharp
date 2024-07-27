@@ -50,8 +50,6 @@ internal static class GlobalVariable
     public static readonly Dictionary<string, decimal> TotalDailyEnergy;
     public static readonly Dictionary<string, decimal> TotalPower;
 
-    public static readonly Stopwatch PrintTime;
-    public static readonly Stopwatch PrintError;
     public static readonly Stopwatch InsertTotalDailyEnergy;
     public static readonly Stopwatch InsertTotalPower;
 
@@ -80,12 +78,9 @@ internal static class GlobalVariable
 
         InitRows(settings, page1);
 
-        PrintTime = Stopwatch.StartNew();
-        PrintError = Stopwatch.StartNew();
         InsertTotalDailyEnergy = Stopwatch.StartNew();
         InsertTotalPower = Stopwatch.StartNew();
     }
-
 
     private static void InitRows(IConfigurationRoot settings, string page)
     {

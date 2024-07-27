@@ -2,6 +2,9 @@
 using esphomecsharp.Screen;
 using System.Threading.Tasks;
 
+_ = ConsolePeriodicTimer.StartPrintTimeAsync();
+_ = ConsolePeriodicTimer.StartPrintErrorAsync();
+
 await EspHomeContext.CreateDBIfNotExistAsync();
 
 EspHomeOperation.Running = true;
@@ -19,6 +22,8 @@ var db = EspHomeContext.RunAndProcessAsync();
 while (await ConsoleOperation.ReadKeyAsync()) ;
 
 EspHomeOperation.Running = false;
+
+await ConsolePeriodicTimer.StopTimerAsync();
 
 EspHomeContext.StopQueue();
 ConsoleOperation.StopQueue();

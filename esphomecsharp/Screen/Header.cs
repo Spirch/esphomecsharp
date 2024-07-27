@@ -2,57 +2,13 @@
 using esphomecsharp.Model;
 using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace esphomecsharp.Screen;
 
 public sealed class Header
 {
-    public static async Task PrintErrorAsync(bool bypassInterval = false)
-    {
-        if (bypassInterval || GlobalVariable.PrintError.Elapsed.TotalSeconds > GlobalVariable.Settings.ShowErrorInterval)
-        {
-            ConsoleOperation.AddQueue(EConsoleScreen.Header, async () =>
-            {
-                var count = await EspHomeContext.GetErrorCountAsync();
-
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.SetCursorPosition(GlobalVariable.CONSOLE_LEFT_POS, 0);
-                if (count == 0)
-                {
-                    Console.Write("".PadRight(GlobalVariable.CONSOLE_RIGHT_PAD));
-                }
-                else
-                {
-                    Console.Write($"{count} error(s)".PadRight(GlobalVariable.CONSOLE_RIGHT_PAD));
-                }
-            });
-
-            GlobalVariable.PrintError.Restart();
-        }
-
-        await Task.CompletedTask;
-    }
-
-    public static async Task PrintTimeAsync()
-    {
-        if (GlobalVariable.PrintTime.ElapsedMilliseconds > 1000)
-        {
-            ConsoleOperation.AddQueue(EConsoleScreen.Header, async () =>
-            {
-                Console.ForegroundColor = ConsoleColor.White;
-                Console.SetCursorPosition(GlobalVariable.CONSOLE_LEFT_POS, 1);
-                Console.Write(DateTime.Now.ToString(GlobalVariable.Settings.DateTimeFormat).PadRight(GlobalVariable.CONSOLE_RIGHT_PAD));
-
-                await Task.CompletedTask;
-            });
-
-            GlobalVariable.PrintTime.Restart();
-        }
-
-        await Task.CompletedTask;
-    }
-
     public static async Task TotalDailyEnergyAsync(Event json)
     {
         if (GlobalVariable.TotalDailyEnergy.TryGetValue(json.Id, out decimal value) &&

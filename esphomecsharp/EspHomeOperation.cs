@@ -153,10 +153,6 @@ public static class EspHomeOperation
 
             json.UnixTime = DateTimeOffset.Now.ToUnixTimeSeconds();
 
-            await Header.PrintErrorAsync();
-
-            await Header.PrintTimeAsync();
-
             await Header.TotalDailyEnergyAsync(json);
 
             await Header.TotalPowerAsync(json);

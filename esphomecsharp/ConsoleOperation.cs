@@ -122,13 +122,13 @@ public static class ConsoleOperation
     public static async Task SoftDeleteNextErrorAsync()
     {
         await EspHomeContext.SoftDeleteNextErrorAsync();
-        await Header.PrintErrorAsync(true);
+        await ConsolePeriodicTimer.PrintErrorAsync();
     }
 
     public static async Task SoftDeleteAllErrorAsync()
     {
         await EspHomeContext.SoftDeleteAllErrorAsync();
-        await Header.PrintErrorAsync(true);
+        await ConsolePeriodicTimer.PrintErrorAsync();
     }
 
     public static async Task HardDeleteAllHandledErrorAsync()
