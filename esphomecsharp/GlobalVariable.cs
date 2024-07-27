@@ -9,37 +9,8 @@ using System.Text.Json;
 
 namespace esphomecsharp;
 
-internal static class GlobalVariable
+public static class GlobalVariable
 {
-    private sealed class Rows
-    {
-        public string Prefix { get; set; }
-        public string Suffix { get; set; }
-        public int Column { get; set; }
-        public int Width { get; set; }
-        public string Name { get; set; }
-        public string Unit { get; set; }
-        public bool IsTotalDailyEnergy { get; set; }
-        public bool IsTotalPower { get; set; }
-        public decimal RecordDelta { get; set; }
-        public int RecordThrottle { get; set; }
-        public bool Hidden { get; set; }
-    }
-
-    public const string RES_TOTAL_DAILY_ENERGY = "Total Daily Energy:";
-    public const string RES_TOTAL_POWER = "Total Power:";
-    public const string RES_TOTAL = "_total";
-    public const string RES_NAME = "_name";
-    public const string RES_KILLO_WATT = "kW";
-    public const string RES_WATT = "W";
-
-    public const int TABLE_START_COL = 5;
-    public const int CONSOLE_LEFT_POS = 5;
-    public const int CONSOLE_RIGHT_PAD = 35;
-    public const int DATA_START = 6; //"data: ".Length;
-    public const string DATA_JSON = "data: {";
-    public const string EVENT_STATE = "event: state";
-
     public static readonly JsonSerializerOptions JsonOptions;
 
     public static readonly List<Server> Servers;
@@ -78,6 +49,7 @@ internal static class GlobalVariable
 
         InitRows(settings, page1);
 
+        //to do periodic timer
         InsertTotalDailyEnergy = Stopwatch.StartNew();
         InsertTotalPower = Stopwatch.StartNew();
     }
@@ -86,7 +58,7 @@ internal static class GlobalVariable
     {
         Servers.AddRange(settings.GetSection($"{page}-Servers").Get<List<Server>>());
 
-        var rawRows = settings.GetSection($"{page}-RowInfo").Get<List<Rows>>();
+        var rawRows = settings.GetSection($"{page}-RowInfo").Get<List<AppSettingsRowInfo>>();
         var rowTotalDailyEnergy = rawRows.Single(x => x.IsTotalDailyEnergy);
         var rowTotalPower = rawRows.Single(x => x.IsTotalPower);
 
@@ -105,32 +77,32 @@ internal static class GlobalVariable
                 Color = server.Color,
             });
 
-            server.Row += TABLE_START_COL;
+            server.Row += Constant.TABLE_START_COL;
         }
 
         foreach (var total in TotalDailyEnergy)
         {
-            FinalRows.Add($"{total.Key}{RES_TOTAL}", new RowInfo()
+            FinalRows.Add($"{total.Key}{Constant.RES_TOTAL}", new RowInfo()
             {
                 Server = new()
                 {
                     FriendlyName = "Total Daily Energy",
                 },
                 Name = page,
-                Unit = RES_KILLO_WATT,
+                Unit = Constant.RES_KILLO_WATT,
             });
         }
 
         foreach (var total in TotalPower)
         {
-            FinalRows.Add($"{total.Key}{RES_TOTAL}", new RowInfo()
+            FinalRows.Add($"{total.Key}{Constant.RES_TOTAL}", new RowInfo()
             {
                 Server = new()
                 {
                     FriendlyName = "Total Power",
                 },
                 Name = page,
-                Unit = RES_WATT,
+                Unit = Constant.RES_WATT,
             });
         }
 
@@ -144,7 +116,7 @@ internal static class GlobalVariable
             {
                 Server = new()
                 {
-                    Row = TABLE_START_COL,
+                    Row = Constant.TABLE_START_COL,
                 },
                 Padding = width,
                 Name = header.Name,

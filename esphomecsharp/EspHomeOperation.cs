@@ -8,6 +8,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.NetworkInformation;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace esphomecsharp;
@@ -15,10 +16,9 @@ namespace esphomecsharp;
 public static class EspHomeOperation
 {
     public static bool LogToFile {  get; set; }
-    public static bool Running { get; set; }
 
     //try reconnect if no activity after X
-    public static async Task MonitorConnectionTimeoutAsync()
+    public static async Task MonitorConnectionTimeoutAsync(CancellationToken token)
     {
         GlobalVariable.Servers.AsParallel().ForAll(async x =>
         {
@@ -26,7 +26,7 @@ public static class EspHomeOperation
 
             x.LastActivity = Stopwatch.StartNew();
 
-            while (Running)
+            while (!token.IsCancellationRequested)
             {
                 await Task.Delay(5000);
 
@@ -56,7 +56,7 @@ public static class EspHomeOperation
         if (server.CancellationTokenSource != null)
         {
             if (!server.CancellationTokenSource.IsCancellationRequested &&
-                 server.LastActivity.Elapsed.TotalSeconds > server.ServerTimeOut)
+                 server.LastActivity.Elapsed.TotalSeconds >= server.ServerTimeOut)
             {
                 server.CancellationTokenSource.Cancel();
                 server.LastActivity.Restart();
@@ -66,20 +66,20 @@ public static class EspHomeOperation
         await Task.CompletedTask;
     }
 
-    public static async Task FetchDeviceDataAsync()
+    public static async Task FetchDeviceDataAsync(CancellationToken token)
     {
         GlobalVariable.Servers.AsParallel().ForAll(async server =>
         {
-            while (Running)
+            while (!token.IsCancellationRequested)
             {
-                await TryMonitorAsync(server);
+                await TryMonitorAsync(server, token);
             }
         });
 
         await Task.CompletedTask;
     }
 
-    private static async Task TryMonitorAsync(Server server)
+    private static async Task TryMonitorAsync(Server server, CancellationToken token)
     {
         server.CancellationTokenSource = new();
         try
@@ -91,7 +91,7 @@ public static class EspHomeOperation
 
             if (pingReply.Status == IPStatus.Success)
             {
-                await MonitorAsync(server);
+                await MonitorAsync(server, token);
             }
             else
             {
@@ -106,7 +106,7 @@ public static class EspHomeOperation
         }
     }
 
-    private static async Task MonitorAsync(Server server)
+    private static async Task MonitorAsync(Server server, CancellationToken token)
     {
         int readPerSecond = 0;
         int numberOfNull = 0;
@@ -119,7 +119,7 @@ public static class EspHomeOperation
         using var reader = new StreamReader(stream);
 
         server.State = EState.Running;
-        while (Running)
+        while (!token.IsCancellationRequested)
         {
             readPerSecond++;
 
@@ -132,7 +132,7 @@ public static class EspHomeOperation
                 await HandleEventAsync(data, server);
             }
 
-            handleNext = string.Equals(data, GlobalVariable.EVENT_STATE, StringComparison.OrdinalIgnoreCase);
+            handleNext = string.Equals(data, Constant.EVENT_STATE, StringComparison.OrdinalIgnoreCase);
 
             if(LogToFile)
             {
@@ -147,9 +147,9 @@ public static class EspHomeOperation
     {
         //basic check to see if the line could be json
         //if(data?.Length > GlobalVariable.DATA_START && data[GlobalVariable.DATA_START] == '{')
-        if(data?.StartsWith(GlobalVariable.DATA_JSON) == true)
+        if(data?.StartsWith(Constant.DATA_JSON) == true)
         {
-            var json = JsonSerializer.Deserialize<Event>(data.AsSpan(GlobalVariable.DATA_START), GlobalVariable.JsonOptions);
+            var json = JsonSerializer.Deserialize<Event>(data.AsSpan(Constant.DATA_START), GlobalVariable.JsonOptions);
 
             json.UnixTime = DateTimeOffset.Now.ToUnixTimeSeconds();
 

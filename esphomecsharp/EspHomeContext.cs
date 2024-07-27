@@ -129,7 +129,7 @@ public static class EspHomeContext
     {
         var newJson = new Event()
         {
-            Id = $"{row.Name}{GlobalVariable.RES_TOTAL}_{type}",
+            Id = $"{row.Name}{Constant.RES_TOTAL}_{type}",
             Value = total,
             UnixTime = DateTimeOffset.Now.ToUnixTimeSeconds(),
         };

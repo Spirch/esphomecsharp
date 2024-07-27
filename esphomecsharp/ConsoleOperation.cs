@@ -150,7 +150,7 @@ public static class ConsoleOperation
         AddQueue(EConsoleScreen.Header, async () =>
         {
             Console.SetCursorPosition(0, 0);
-            Console.WriteLine("".PadRight(Console.WindowWidth * 4));
+            Console.Write("".PadRight(Console.WindowWidth * 4));
 
             await Task.CompletedTask;
         });

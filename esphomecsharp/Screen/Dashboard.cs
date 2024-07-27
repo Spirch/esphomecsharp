@@ -17,7 +17,7 @@ public sealed class Dashboard
                 ConsoleOperation.AddQueue(EConsoleScreen.Dashboard, async () =>
                 {
                     Console.ForegroundColor = header.Color;
-                    Console.SetCursorPosition(GlobalVariable.CONSOLE_LEFT_POS + header.Col, header.Server.Row);
+                    Console.SetCursorPosition(Constant.CONSOLE_LEFT_POS + header.Col, header.Server.Row);
                     Console.Write(header.Name.PadCenter(header.Padding));
 
                     await Task.CompletedTask;
@@ -32,7 +32,7 @@ public sealed class Dashboard
                 ConsoleOperation.AddQueue(EConsoleScreen.Dashboard, async () =>
                 {
                     Console.ForegroundColor = header.Color;
-                    Console.SetCursorPosition(GlobalVariable.CONSOLE_LEFT_POS + header.Col, header.Server.Row);
+                    Console.SetCursorPosition(Constant.CONSOLE_LEFT_POS + header.Col, header.Server.Row);
                     Console.Write(header.Server.FriendlyName.PadLeft(header.Padding));
 
                     await Task.CompletedTask;
@@ -59,7 +59,7 @@ public sealed class Dashboard
                 if (!row.Hidden)
                 {
                     Console.ForegroundColor = x.Color;
-                    Console.SetCursorPosition(GlobalVariable.CONSOLE_LEFT_POS + row.Col, row.Server.Row);
+                    Console.SetCursorPosition(Constant.CONSOLE_LEFT_POS + row.Col, row.Server.Row);
                     Console.Write(row.LastPrint);
                 }
 
@@ -103,8 +103,8 @@ public sealed class Dashboard
             ConsoleOperation.AddQueue(EConsoleScreen.Dashboard, async () =>
             {
                 Console.ForegroundColor = ConsoleColor.Black;
-                Console.SetCursorPosition(GlobalVariable.CONSOLE_LEFT_POS + -4, row);
-                Console.WriteLine("@@@");
+                Console.SetCursorPosition(Constant.CONSOLE_LEFT_POS + -4, row);
+                Console.Write("@@@");
 
                 await Task.CompletedTask;
             });
@@ -114,8 +114,8 @@ public sealed class Dashboard
             ConsoleOperation.AddQueue(EConsoleScreen.Dashboard, async () =>
             {
                 Console.ForegroundColor = ConsoleColor.Red;
-                Console.SetCursorPosition(GlobalVariable.CONSOLE_LEFT_POS + -4, row);
-                Console.WriteLine("!!!");
+                Console.SetCursorPosition(Constant.CONSOLE_LEFT_POS + -4, row);
+                Console.Write("!!!");
 
                 await Task.CompletedTask;
             });
@@ -125,8 +125,8 @@ public sealed class Dashboard
             ConsoleOperation.AddQueue(EConsoleScreen.Dashboard, async () =>
             {
                 Console.ForegroundColor = ConsoleColor.Red;
-                Console.SetCursorPosition(GlobalVariable.CONSOLE_LEFT_POS + -4, row);
-                Console.WriteLine("???");
+                Console.SetCursorPosition(Constant.CONSOLE_LEFT_POS + -4, row);
+                Console.Write("???");
 
                 await Task.CompletedTask;
             });
