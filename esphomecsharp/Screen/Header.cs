@@ -85,6 +85,9 @@ public sealed class Header
             Console.SetCursorPosition(Constant.CONSOLE_LEFT_POS + Constant.CONSOLE_RIGHT_PAD + 1, 3);
             Console.Write($"{ConsoleOperation.Key.ReconnectAll} : Reconnect all   {ConsoleOperation.Key.DeleteAllHandledErrors} : Delete handled errors  {ConsoleOperation.Key.Quit} : Quit");
 
+            Console.SetCursorPosition(Constant.CONSOLE_LEFT_POS, GlobalVariable.RowHeader.Max(x => x.Server.Row) + 2);
+            Console.Write($"Export to Graph (see local folder) Shift + {ConsoleOperation.Key.Graph1Day}:1day {ConsoleOperation.Key.Graph3Days}:3days {ConsoleOperation.Key.Graph7Days}:7days {ConsoleOperation.Key.Graph14Days}:14d {ConsoleOperation.Key.Graph30Days}:30days {ConsoleOperation.Key.GraphAll}:all");
+
             await RefreshLogFlag();
 
             await Task.CompletedTask;
