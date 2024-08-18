@@ -1,0 +1,20 @@
+event:
+  - platform: template
+    name: "${devicename} Button"
+    id: s31_button
+    event_types:
+      - "pressed"
+
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: GPIO0
+      mode: INPUT_PULLUP
+      inverted: True
+    name: "${devicename} Button"
+    on_press:
+      - lambda: |-
+          id(s31_button).trigger("pressed");
+  - platform: status
+    name: "${devicename} Status"
+    id: "${devicename_no_dashes}_status"

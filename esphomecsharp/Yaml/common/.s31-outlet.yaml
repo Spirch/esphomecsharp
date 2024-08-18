@@ -8,17 +8,17 @@ esp8266:
 preferences:
   flash_write_interval: 15min
 
-#logger:
-#  baud_rate: 0 # (UART logging interferes with cse7766)  
+#api:
+#  reboot_timeout: 0s
 
+#logger:
+#  baud_rate: 0 # (UART logging interferes with cse7766)
+#  logs:
+#    sensor: INFO
+    
 uart:
   rx_pin: RX
   baud_rate: 4800
-
-binary_sensor:
-  - platform: status
-    name: "${devicename} Status"
-    id: "${devicename_no_dashes}_status"
 
 switch:
   - platform: gpio
@@ -39,3 +39,4 @@ status_led:
 <<: !include .time.yaml
 <<: !include .web_server.yaml
 <<: !include .wifi.yaml
+<<: !include .s31-binary_sensor.yaml

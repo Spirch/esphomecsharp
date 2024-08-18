@@ -7,7 +7,13 @@ esp32:
 preferences:
   flash_write_interval: 15min
 
+#api:
+#  reboot_timeout: 0s
+
 #logger:
+#  baud_rate: 0 # (UART logging interferes with cse7766)
+#  logs:
+#    sensor: INFO # (Overide any global setting, to VERBOSE will spamming the cse7766 sensors)
 
 uart:
   rx_pin: GPIO16
