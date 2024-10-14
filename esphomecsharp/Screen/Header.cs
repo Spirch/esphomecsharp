@@ -74,10 +74,10 @@ public sealed class Header
             Console.ForegroundColor = ConsoleColor.White;
 
             Console.SetCursorPosition(Constant.CONSOLE_LEFT_POS + Constant.CONSOLE_RIGHT_PAD + 1, 1);
-            Console.Write($"{ConsoleOperation.Key.HideCursor} : Hide cursor     {ConsoleOperation.Key.HandleNextError} : Handle next error");
+            Console.Write($"{ConsoleOperation.Key.HideCursor} : Hide cursor     {ConsoleOperation.Key.HandleNextError} : Handle next error      {ConsoleOperation.Key.LogAllToFile}  : Log all to files");
 
             Console.SetCursorPosition(Constant.CONSOLE_LEFT_POS + Constant.CONSOLE_RIGHT_PAD + 1, 2);
-            Console.Write($"{ConsoleOperation.Key.RefreshHeader} : Refresh header  {ConsoleOperation.Key.HandleAllErrors} : Handle all errors      {ConsoleOperation.Key.LogAllToFile}  : Log all to files");
+            Console.Write($"{ConsoleOperation.Key.RefreshHeader} : Refresh header  {ConsoleOperation.Key.HandleAllErrors} : Handle all errors      {ConsoleOperation.Key.ExportToFile} : Export to file");
 
             LogToFilePos = Console.CursorLeft + 2;
             Console.CursorTop++;

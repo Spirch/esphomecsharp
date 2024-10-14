@@ -20,8 +20,13 @@ sealed public class RowInfo
 
     public int? DbDescId { get; set; }
 
+    public string FriendlyToString()
+    {
+        return $"Name: {Name} LastValue: {LastPrint} Unit: {Unit} LastRecordSw: {LastRecordSw?.Elapsed.TotalSeconds}";
+    }
+
     public override string ToString()
     {
-        return $"Name: {Name} Unit: {Unit} Col: {Col} DbDescId: {DbDescId} LastValue: {LastPrint} LastRecordSw: {LastRecordSw.Elapsed.TotalSeconds} Server: {Server} RecordDelta: {RecordDelta} RecordThrottle: {RecordThrottle}";
+        return $"Name: {Name} Unit: {Unit} Col: {Col} DbDescId: {DbDescId} LastValue: {LastPrint} LastRecordSw: {LastRecordSw?.Elapsed.TotalSeconds} Server: {Server} RecordDelta: {RecordDelta} RecordThrottle: {RecordThrottle}";
     }
 }

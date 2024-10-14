@@ -16,8 +16,13 @@ sealed public class Server
     public Stopwatch LastActivity { get; set; }
     public EState State { get; set; }
 
+    public string FriendlyToString()
+    {
+        return $"Name: {Name} FriendlyName: {FriendlyName} LastActivity: {LastActivity?.Elapsed.TotalSeconds}";
+    }
+
     public override string ToString()
     {
-        return $"Name: {Name} FriendlyName: {FriendlyName} Row: {Row} LastActivity: {LastActivity.Elapsed.TotalSeconds}";
+        return $"Name: {Name} FriendlyName: {FriendlyName} Row: {Row} LastActivity: {LastActivity?.Elapsed.TotalSeconds}";
     }
 }

@@ -2,6 +2,8 @@
 using esphomecsharp.Screen;
 using System;
 using System.Collections.Concurrent;
+using System.IO;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace esphomecsharp;
@@ -20,6 +22,7 @@ public static class ConsoleOperation
         public const ConsoleKey DeleteAllHandledErrors = ConsoleKey.F8;
 
         public const ConsoleKey LogAllToFile = ConsoleKey.F9;
+        public const ConsoleKey ExportToFile = ConsoleKey.F10;
         public const ConsoleKey Quit = ConsoleKey.F12;
 
         //modifier is shift
@@ -142,6 +145,9 @@ public static class ConsoleOperation
                     case Key.DeleteAllHandledErrors:
                         await HardDeleteAllHandledErrorAsync();
                         break;
+                    case Key.ExportToFile:
+                        await ExportToFileAsync();
+                        break;
                     case Key.LogAllToFile:
                         await ToggleLogToFileAsync();
                         break;
@@ -188,6 +194,15 @@ public static class ConsoleOperation
     public static async Task GraphAsync(int days)
     {
         await EspHomeContext.GraphAsync(days);
+    }
+    public static async Task ExportToFileAsync()
+    {
+        var filename = "CurrentData." + DateTime.Now.ToString(GlobalVariable.Settings.DateTimeFormat) + ".txt";
+        filename = string.Join(".",filename.Split(Path.GetInvalidFileNameChars()));
+
+        File.WriteAllText(filename, GlobalVariable.ToString());
+
+        await Task.CompletedTask;
     }
 
     public static async Task ToggleLogToFileAsync()

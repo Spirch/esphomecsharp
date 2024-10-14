@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text;
 using System.Text.Json;
 
 namespace esphomecsharp;
@@ -25,6 +26,32 @@ public static class GlobalVariable
     public static readonly Stopwatch InsertTotalPower;
 
     public static readonly Settings Settings;
+
+    public new static string ToString()
+    {
+        var sb = new StringBuilder();
+
+        var totalDailyEnergy = TotalDailyEnergy.Sum(x => x.Value);
+        var totalPower = TotalPower.Sum(x => x.Value);
+
+        sb.AppendLine($"{Constant.RES_TOTAL_DAILY_ENERGY} {totalDailyEnergy} {Constant.RES_KILLO_WATT}");
+        sb.AppendLine($"{Constant.RES_TOTAL_POWER} {totalPower} {Constant.RES_WATT}");
+
+        foreach (var s in Servers)
+        {
+            sb.AppendLine(s.FriendlyToString());
+            foreach (var r in FinalRows.Where(x => x.Key.Contains(s.Name)))
+            {
+                if(r.Value.LastRecordSw != null)
+                {
+                    sb.Append("".PadRight(4));
+                    sb.AppendLine(r.Value.FriendlyToString());
+                }
+            }
+        }
+
+        return sb.ToString();
+    }
 
     static GlobalVariable()
     {
