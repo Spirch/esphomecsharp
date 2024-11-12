@@ -85,7 +85,7 @@ public static class EspHomeContext
         }
     }
 
-    public static async Task GetDescIdAsync(Context EspHomeDb, Event json, RowInfo row)
+    private static async Task GetDescIdAsync(Context EspHomeDb, Event json, RowInfo row)
     {
         if (row.DbDescId == null)
         {

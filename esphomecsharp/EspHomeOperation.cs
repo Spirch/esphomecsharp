@@ -15,53 +15,36 @@ namespace esphomecsharp;
 
 public static class EspHomeOperation
 {
-    public static bool LogToFile {  get; set; }
+    public static bool LogToFile { get; set; }
 
     //try reconnect if no activity after X
     public static async Task MonitorConnectionTimeoutAsync(CancellationToken token)
     {
-        GlobalVariable.Servers.AsParallel().ForAll(async x =>
+        GlobalVariable.Servers.AsParallel().ForAll(async server =>
         {
             EState lastState = EState.Unknown;
 
-            x.LastActivity = Stopwatch.StartNew();
+            server.LastActivity = Stopwatch.StartNew();
 
             while (!token.IsCancellationRequested)
             {
                 await Task.Delay(5000);
 
-                lastState = await CheckStateAsync(x, lastState);
+                if (lastState != server.State)
+                {
+                    await Dashboard.PrintStateAsync(server.State, server.Row);
 
-                await CancelIfTimeoutAsync(x);
+                    lastState = server.State;
+                }
+
+                if (!server.CancellationTokenSource.IsCancellationRequested &&
+                     server.LastActivity.Elapsed.TotalSeconds >= server.ServerTimeOut)
+                {
+                    server.CancellationTokenSource.Cancel();
+                    server.LastActivity.Restart();
+                }
             }
         });
-
-        await Task.CompletedTask;
-    }
-
-    private static async Task<EState> CheckStateAsync(Server server, EState lastState)
-    {
-        if (lastState != server.State)
-        {
-            await Dashboard.PrintStateAsync(server.State, server.Row);
-
-            return server.State;
-        }
-
-        return lastState;
-    }
-
-    private static async Task CancelIfTimeoutAsync(Server server)
-    {
-        if (server.CancellationTokenSource != null)
-        {
-            if (!server.CancellationTokenSource.IsCancellationRequested &&
-                 server.LastActivity.Elapsed.TotalSeconds >= server.ServerTimeOut)
-            {
-                server.CancellationTokenSource.Cancel();
-                server.LastActivity.Restart();
-            }
-        }
 
         await Task.CompletedTask;
     }
@@ -102,62 +85,13 @@ public static class EspHomeOperation
         }
         catch (Exception e)
         {
-            await HandleErrorAsync(e, server);
-        }
-    }
-
-    private static async Task MonitorAsync(Server server, CancellationToken token)
-    {
-        int readPerSecond = 0;
-        int numberOfNull = 0;
-        var watchPerSecond = Stopwatch.StartNew();
-        var watchNull = Stopwatch.StartNew();
-        bool handleNext = false;
-
-        using var client = new HttpClient();
-        using var stream = await client.GetStreamAsync(server.Uri);
-        using var reader = new StreamReader(stream);
-
-        server.State = EState.Running;
-        while (!token.IsCancellationRequested)
-        {
-            readPerSecond++;
-
-            string data = await reader.ReadLineAsync().WaitAsync(server.CancellationTokenSource.Token);
-
-            ThrowIfIssue(server, data, ref watchPerSecond, ref readPerSecond, ref watchNull, ref numberOfNull);
-
-            if (handleNext)
+            if (server.State != EState.Stopped)
             {
-                await HandleEventAsync(data, server);
+                await e.HandleErrorAsync(server.Name);
+                server.State = EState.Stopped;
             }
 
-            handleNext = string.Equals(data, Constant.EVENT_STATE, StringComparison.OrdinalIgnoreCase);
-
-            if(LogToFile)
-            {
-                var now = DateTime.Now;
-
-                File.AppendAllText(server.Name + " - " + now.ToString("yyyy-MM-dd") + ".txt", now.ToString("yyyy-MM-dd HH:mm:ss.fffffff") + " : " + (data ?? "<null>") + Environment.NewLine);
-            }
-        }
-    }
-
-    private static async Task HandleEventAsync(string data, Server server)
-    {
-        //basic check to see if the line could be json
-        //if(data?.Length > GlobalVariable.DATA_START && data[GlobalVariable.DATA_START] == '{')
-        if(data?.StartsWith(Constant.DATA_JSON) == true)
-        {
-            var json = JsonSerializer.Deserialize<Event>(data.AsSpan(Constant.DATA_START), GlobalVariable.JsonOptions);
-
-            json.UnixTime = DateTimeOffset.Now.ToUnixTimeSeconds();
-
-            await Header.TotalDailyEnergyAsync(json);
-
-            await Header.TotalPowerAsync(json);
-
-            await Dashboard.PrintRowAsync(server, json);
+            await Task.Delay(5000);
         }
     }
 
@@ -170,58 +104,61 @@ public static class EspHomeOperation
         return pingReply;
     }
 
-    private static async Task HandleErrorAsync(Exception e, Server server)
+    private static async Task MonitorAsync(Server server, CancellationToken token)
     {
-        if (server.State != EState.Stopped)
-        {
-            await e.HandleErrorAsync(server.Name);
-            server.State = EState.Stopped;
-        }
+        bool handleNext = false;
 
-        await Task.Delay(5000);
+        using var client = new HttpClient();
+        using var stream = await client.GetStreamAsync(server.Uri);
+        using var reader = new StreamReader(stream);
+
+        server.State = EState.Running;
+        while (!token.IsCancellationRequested)
+        {
+            string data = await reader.ReadLineAsync().WaitAsync(server.CancellationTokenSource.Token);
+
+            if (server.CancellationTokenSource.IsCancellationRequested)
+            {
+                throw new Exception($"{server.Name} CancellationTokenSource.IsCancellationRequested");
+            }
+
+            //reader.EndOfStream cause deadlock if the device lose electricity or is disconnected
+            if (data == null)
+            {
+                throw new Exception($"{server.Name} remote connection closed");
+            }
+
+            if (handleNext)
+            {
+                await HandleEventAsync(data, server);
+            }
+
+            handleNext = string.Equals(data, Constant.EVENT_STATE, StringComparison.OrdinalIgnoreCase);
+
+            if (LogToFile)
+            {
+                var now = DateTime.Now;
+
+                File.AppendAllText(server.Name + " - " + now.ToString("yyyy-MM-dd") + ".txt", now.ToString("yyyy-MM-dd HH:mm:ss.fffffff") + " : " + (data ?? "<null>") + Environment.NewLine);
+            }
+        }
     }
 
-    private static void ThrowIfIssue(Server server, string data, ref Stopwatch watchPerSecond, ref int readPerSecond, ref Stopwatch watchNull, ref int numberOfNull)
+    private static async Task HandleEventAsync(string data, Server server)
     {
-        if (server.CancellationTokenSource.IsCancellationRequested)
+        //basic check to see if the line could be json
+        //if(data?.Length > GlobalVariable.DATA_START && data[GlobalVariable.DATA_START] == '{')
+        if (data?.StartsWith(Constant.DATA_JSON) == true)
         {
-            throw new Exception($"{server.Name} CancellationTokenSource.IsCancellationRequested");
-        }
+            var json = JsonSerializer.Deserialize<Event>(data.AsSpan(Constant.DATA_START), GlobalVariable.JsonOptions);
 
-        if (data == null)
-        {
-            numberOfNull++;
-            Debug.WriteLine($"{DateTime.Now} {server.Name} data is null");
-        }
+            json.UnixTime = DateTimeOffset.Now.ToUnixTimeSeconds();
 
-        //
-        //this cause deadlock if the device lose electricity or is disconnected
-        //
-        //if (reader.EndOfStream)
-        //{
-        //    throw new Exception($"{x.Name} EndOfStream");
-        //}
+            await Header.TotalDailyEnergyAsync(json);
 
-        if (watchPerSecond.ElapsedMilliseconds > 1000)
-        {
-            if (readPerSecond > 100) //should never happen! but it did...
-            {
-                throw new Exception($"{server.Name} readPerSecond, read {readPerSecond}, null {numberOfNull}");
-            }
+            await Header.TotalPowerAsync(json);
 
-            watchPerSecond.Restart();
-            readPerSecond = 0;
-        }
-
-        if (watchNull.ElapsedMilliseconds > 1000 * 60 * 2) // 2 minutes
-        {
-            if (numberOfNull > 1)
-            {
-                throw new Exception($"{server.Name} null, read {readPerSecond}, null {numberOfNull}");
-            }
-
-            watchNull.Restart();
-            numberOfNull = 0;
+            await Dashboard.PrintRowAsync(server, json);
         }
     }
 }
